@@ -1,0 +1,32 @@
+#dotnet
+bin/
+obj/
+
+#node
+ClientApp/node_modules
+
+# Output
+ClientApp/.output
+ClientApp/.vercel
+ClientApp/.netlify
+ClientApp/.wrangler
+ClientApp/.svelte-kit
+ClientApp/build
+
+# OS (Modificato: ora intercetta i file ovunque nel progetto)
+.DS_Store
+Thumbs.db
+*.desktop
+
+# Env
+ClientApp/.env
+ClientApp/.env.*
+ClientApp/!.env.example
+ClientApp/!.env.test
+
+# Vite
+ClientApp/vite.config.js.timestamp-*
+ClientApp/vite.config.ts.timestamp-*
+
+# .NET User Secrets / Config locali (Opzionale: scommenta se hai dati sensibili)
+# appsettings.Development.json

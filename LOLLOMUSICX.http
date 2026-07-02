@@ -1,0 +1,6 @@
+@LOLLOMUSICX_HostAddress = http://localhost:5050
+
+GET {{LOLLOMUSICX_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
