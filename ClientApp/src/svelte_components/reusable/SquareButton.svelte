@@ -3,6 +3,7 @@
     import { onMount } from "svelte";
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import { GetDefPng } from "../../scripts/defPngManager.js";
+    import { openContextMenu } from "../../routes/ContextMenu.svelte";
 
     let { content } = $props();
 
@@ -15,7 +16,7 @@
 
     async function imgError() {
         if (immage.src == content.thumbnails[0]) {
-            immage.src = await GetDefPng(content.type)
+            immage.src = await GetDefPng(content.type);
         } else {
             immage.src = content.thumbnails[0];
         }
@@ -34,15 +35,18 @@
     }
 </script>
 
-<button {onclick}>
-    <div>
+<button {onclick} oncontextmenu={ (e) => {
+    e.preventDefault();
+    openContextMenu(e, content)
+}}>
+    <div class="Bcontent">
         <img
             bind:this={immage}
             onerror={() => {
                 imgError();
             }}
-            alt=""
             draggable="false"
+            alt=""
         />
 
         <div
@@ -52,152 +56,147 @@
             {#if content.title}
                 <p
                     class="title"
-                    style="font-size: {20 - content.title.length / 3}px;"
+                    style="font-size: {22 - content.title.length / 4}px;"
                 >
-                    {content.title}
+                    {content.title.toUpperCase()}
                 </p>
             {:else}
                 <p
                     class="title"
-                    style="font-size: {20 - content.itemTitle.length / 3}px;"
+                    style="font-size: {22 - content.itemTitle.length / 4}px;"
                 >
-                    {content.itemTitle}
+                    {content.itemTitle.toUpperCase()}
                 </p>
             {/if}
         </div>
 
-        {#if content.artists}
-            <!-- svelte-ignore node_invalid_placement_ssr -->
-            <button
-                class="link"
-                onclick={(e) => {
-                    e.stopPropagation();
-                    NavigateTo("/artists", [
-                        `browseid=${content.artists[0].artistId}`,
-                    ]);
-                }}
-            >
-                {content.artists[0].artistName}</button
-            >
-        {:else}
-            <p class="subtitle">{content.type}</p>
-        {/if}
+        <div class="subtitle-div">
+            <p class="subtitle">{content.type.toUpperCase()}</p>
+
+            {#if content.artists}
+
+                <p class="dot-divider">•</p>
+
+                <!-- svelte-ignore node_invalid_placement_ssr -->
+                <button
+                    class="link"
+                    onclick={(e) => {
+                        e.stopPropagation();
+                        NavigateTo("/artists", [
+                            `browseid=${content.artists[0].artistId}`,
+                        ]);
+                    }}
+                >
+                    {content.artists[0].artistName.toUpperCase()}</button
+                >
+            {/if}
+        </div>
     </div>
 </button>
 
 <style>
-    .link {
-        background: none;
-        border: none;
-        width: auto;
-        height: auto;
 
-        color: rgba(255, 255, 255, 0.7);
-        font-weight: 800;
-        margin-left: 5px;
+    .Bcontent {
+        background: transparent;
 
-        font-size: 15px;
-
-        backdrop-filter: none;
-    }
-
-    .link:hover {
-        transform: translateX(0px);
-        box-shadow: none;
-
-        text-decoration: underline;
-    }
-
-    .title-strip {
-        height: 14px;
-
-        margin: 0px;
-        margin-bottom: 8px;
-    }
-
-
-    .title {
-        margin-top: 0px;
-        margin-bottom: 0px;
-
-        font-weight: 700;
-
-        width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        line-height: 25px;
-    }
-
-    .subtitle {
-        margin-top: 0px;
-        margin-left: 4px;
-
-        width: 100%;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-
-        font-weight: 700;
-
-        font-size: 15px;
-
-        opacity: 0.7;
-    }
-
-    button {
-        position: relative;
-
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-
-        padding: 0px;
-
-        width: 160px;
-        height: 200px;
+        height: 250px;
 
         display: flex;
         flex-direction: column;
-        justify-content: start;
+        gap: 3px;
 
-        border-radius: 12px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
-        text-align: left;
+    button img {
+        height: 160px;
+        border-radius: 10px;
+
+        pointer-events: none;
+    }
+
+    button {
+
+        position: relative;
+
         color: white;
+        background: none;
+        border: none;
+        margin: 5px;
+
 
         cursor: pointer;
-        backdrop-filter: brightness(0.6);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     button:hover {
-        transform: translateY(-20px);
-        box-shadow: 0px 10px 30px 10px rgba(0, 0, 0, 0.491);
-
-        z-index: 2;
+        transform: translateY(-4px);
     }
 
-    button div {
-        position: relative;
+    .title {
 
-        left: 4px;
-        top: 4px;
+        text-align: start;
 
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
+        margin: 0px;
+
+        font-weight: 900;
+
+        min-height: 25px;
+        width: 155px;
+
+        pointer-events: none;
     }
 
-    img {
-        position: relative;
+    .dot-divider {
+        margin: 0px;
 
-        border-radius: 7px;
-
-        width: calc(100% - 2px);
-        height: 138px;
-
-        object-fit: cover;
-
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        margin-left: 5px !important;
+        margin-right: 5px !important;
     }
+
+    .subtitle-div {
+
+        display: flex;
+        align-items: center;
+
+        flex-wrap: wrap;
+
+        font-weight: 700;
+        font-size: 15px;
+
+        text-align: start;
+
+
+
+        height: 17px;
+        width: 155px;
+
+        margin: 0px;
+
+        opacity: 0.5;
+    }
+
+    .subtitle-div p {
+        width: fit-content;
+        margin: 0px;
+    }
+
+    .subtitle-div button {
+
+        margin: 0px;
+
+        padding: 0px;
+        font-weight: 700;
+        font-size: 15px;
+
+        text-wrap: nowrap;
+    }
+
+    .subtitle-div button:hover {
+        transform: translateY(0px);
+
+        text-decoration: underline;
+        font-weight: 900;
+    }
+
 </style>

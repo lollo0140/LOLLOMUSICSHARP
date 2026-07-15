@@ -38,7 +38,7 @@
     });
 </script>
 
-<p class="page-title">Home</p>
+<p class="page-title">HOME</p>
 
 <div class="home-content">
     {#if content == undefined}

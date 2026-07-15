@@ -1,13 +1,8 @@
-<script>
-    import { onMount } from "svelte";
-    import { NavigateTo } from "../../scripts/navigationScript.js";
-    import NavBarPButton from "./navBarPButton.svelte";
-    import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
+<script module>
+    let playlist = $state([]);
 
-    let playlist = $state();
-    let playlistLoading = $state(false);
-
-    onMount(async () => {
+    async function loadList() {
+        playlist = [];
         let content = JSON.parse(
             await window.electron.ipcRenderer.lolloInvoke(
                 "getLibraryPlaylists",
@@ -17,10 +12,22 @@
         content.splice(0, 1);
 
         playlist = content;
+    }
 
-        console.log(playlist);
+    export async function reloadSidebarList() {
+        await loadList();
+    }
+</script>
 
-        playlistLoading = false;
+<script>
+    import { onMount } from "svelte";
+    import { NavigateTo } from "../../scripts/navigationScript.js";
+    import NavBarPButton from "./navBarPButton.svelte";
+    import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
+    import { fly } from "svelte/transition";
+
+    onMount(async () => {
+        await loadList();
     });
 </script>
 
@@ -38,27 +45,25 @@
         <button class="page-button" onclick={() => NavigateTo("/localfiles")}>
             <img src="/assets/navbar/folder.png" alt="" />
         </button>
+
+        <div class="divider"></div>
     </div>
 
-    <div class="divider"></div>
-
     <div class="library-elements">
-        {#if !playlistLoading}
-            {#each playlist as P}
+        {#each playlist as P, i}
+            <div transition:fly={{ x: -10, delay: 50 * i }}>
                 <NavBarPButton content={P} />
-            {/each}
-        {:else}
-            <LoadingAnimation />
-        {/if}
+            </div>
+        {/each}
     </div>
 </main>
 
 <style>
     .library-elements {
+        position: absolute;
 
-        margin-top: 15px;
+        top: 250px;
 
-        height: 400px;
         overflow-y: scroll;
     }
 
@@ -75,6 +80,7 @@
 
         border-radius: 10px;
 
+        margin-left: 19px;
         margin-top: 10px;
         margin-bottom: 10px;
     }
@@ -116,6 +122,8 @@
         right: 0px;
         bottom: 0px;
         top: 0px;
+
+        height: 100%;
 
         display: flex;
         flex-direction: column;

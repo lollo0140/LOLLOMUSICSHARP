@@ -1,5 +1,4 @@
 import { goto } from "$app/navigation";
-import { get } from "svelte/store";
 
 export async function NavigateTo(route, params, refresh = false) {
     let stringParams = "";
@@ -21,4 +20,8 @@ export async function NavigateTo(route, params, refresh = false) {
 
 
 
+}
+
+export async function NavigateToArtist(browseId) {
+    NavigateTo("/artists", [`browseid=${browseId}`])
 }

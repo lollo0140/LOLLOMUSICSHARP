@@ -31,9 +31,6 @@
         </div>
     </div>
 
-    <div class="controlls lollo-appstyle-DivContainer">
-        <PlayerControlls />
-    </div>
 </div>
 
 <style>
@@ -68,13 +65,13 @@
     nav {
         position: absolute;
 
-        left: 8px;
-        top: 8px;
-        bottom: 8px;
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
 
         width: 55px;
 
-        border-radius: 16px;
+        border-radius: 20px;
     }
 
     .display {
@@ -87,18 +84,6 @@
         bottom: 0px;
     }
 
-    .controlls {
-        position: absolute;
-
-        left: 0px;
-        right: 0px;
-
-        bottom: 0px;
-
-        height: 60px;
-        width: 100%;
-    }
-
     .app-navigator {
         position: absolute;
 
@@ -108,6 +93,9 @@
         bottom: 0px;
 
         border-radius: 25px;
+
+        background: none;
+        border: none;
     }
 
     .app-content {
@@ -116,16 +104,16 @@
         left: 0px;
         right: 0px;
         top: 0px;
-        bottom: 85px;
+        bottom: 0px;
     }
 
     .content {
         position: absolute;
 
-        left: 25px;
-        right: 25px;
-        top: 25px;
-        bottom: 25px;
+        left: 15px;
+        right: 15px;
+        top: 15px;
+        bottom: 15px;
 
         opacity: 1;
     }

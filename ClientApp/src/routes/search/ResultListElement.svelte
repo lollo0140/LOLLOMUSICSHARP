@@ -2,6 +2,25 @@
     import { GetDefPng } from "../../scripts/defPngManager.js";
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import { onMount } from "svelte";
+    import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
+
+    let Liked = $derived.by(() => {
+        if (content === undefined) {
+            return false;
+        }
+
+        if (content.type === "video" || content.type === "track") {
+            let itemfound = $likedSongs.find((id) => content.id === id);
+
+            if (itemfound != undefined) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+
+    let IsLocal = false;
 
     let { content } = $props();
 
@@ -43,8 +62,10 @@
     });
 </script>
 
-<button {onclick}>
-    <div class="button-content">
+<div class="button">
+    <button class="song-button" {onclick}> . </button>
+
+    <div class="button-content" style="pointer-events: none;">
         <img
             class={content.type === "video" ? "videoImg" : ""}
             src={imgurl}
@@ -73,7 +94,9 @@
                 {#each content.artists as art}
                     {#if art.artistId}
                         <!-- svelte-ignore node_invalid_placement_ssr -->
-                        <button class="link"
+                        <button
+                            style="pointer-events: all;"
+                            class="link"
                             onclick={(e) => {
                                 e.stopPropagation();
                                 NavigateTo("/artists", [
@@ -81,17 +104,22 @@
                                 ]);
                             }}
                         >
-                            {art.artistName}</button
+                            {art?.artistName?.toUpperCase()}</button
                         >
                     {:else}
-                        <p>{art.artistName ?? art.channelName}</p>
+                        <p>
+                            {art?.artistName?.toUpperCase() ??
+                                art?.channelName?.toUpperCase()}
+                        </p>
                     {/if}
                 {/each}
 
                 {#if content.album}
                     <p>•</p>
                     <!-- svelte-ignore node_invalid_placement_ssr -->
-                    <button class="link"
+                    <button
+                        style="pointer-events: all;"
+                        class="link"
                         onclick={(e) => {
                             e.stopPropagation();
                             NavigateTo("/album", [
@@ -99,35 +127,103 @@
                             ]);
                         }}
                     >
-                        {content.album.titleName}</button
+                        {content?.album?.titleName?.toUpperCase()}</button
                     >
                 {/if}
 
-                {#if content.type === "playlist"}
-                    <p>•</p>
-                    <p>Playlist</p>
-                {/if}
-
-                {#if content.type === "album"}
-                    <p>•</p>
-                    <p>Album</p>
-                {/if}
-
-                {#if content.type === "video"}
-                    <p>•</p>
-                    <p>Video</p>
-                {/if}
+                <p>•</p>
+                <p style="font-weight: 800; opacity: 0.55;">
+                    {content.type.toUpperCase()}
+                </p>
             </div>
+
+            {#if content.type === "video" || content.type === "track"}
+                <div class="actions-div" style="pointer-events: all;">
+                    <button style="opacity: {Liked ? '1' : '0.3'};" onclick={ () => {
+                        SetVideoLike(content.id, !Liked)
+                    }}>
+                        <img src="/assets/badge/like.png" alt="" />
+                    </button>
+                    <button style="opacity: {IsLocal ? '1' : '0.3'};">
+                        <img src="/assets/badge/local.png" alt="" />
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
-</button>
+</div>
 
 <style>
+    .actions-div {
+        position: absolute;
+
+        display: flex;
+        flex-direction: row;
+        align-content: center;
+        justify-content: space-between;
+
+        right: 11px;
+
+        gap: 5px;
+    }
+
+    .actions-div button {
+        width: 30px;
+        height: 30px;
+
+        background: rebeccapurple;
+
+        margin: 0px;
+        padding: 0px;
+
+        border: none;
+        background: none;
+
+        display: flex;
+
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+
+        cursor: pointer;
+
+        transition: all 200ms;
+    }
+
+    .actions-div button:hover {
+        opacity: 1 !important;
+    }
+
+    .actions-div button img {
+        width: 22px;
+        height: 22px;
+
+        margin: 0px;
+        border: none;
+        border-radius: 0px;
+    }
+
+    .song-button {
+        position: absolute;
+
+        left: 0px;
+        top: 0px;
+        right: 0px;
+        bottom: -3px;
+
+        border: none;
+        padding: 0px;
+        margin: 0px;
+
+        opacity: 0;
+
+        cursor: pointer;
+    }
+
     .link {
         background: none;
         border: none;
-        width: auto;
-        height: auto;
+        height: 21px;
 
         color: rgba(255, 255, 255, 1);
         font-weight: 800;
@@ -136,9 +232,17 @@
         margin-left: 0px;
         margin-right: 5px;
 
+        max-width: 170px;
+        width: max-content;
 
+        white-space: nowrap;
+
+        text-overflow: ellipsis;
+        overflow: hidden;
 
         backdrop-filter: none;
+        text-align: start;
+        cursor: pointer;
     }
 
     .link:hover {
@@ -159,11 +263,11 @@
         background: none;
     }
 
-    button {
+    .button {
         position: relative;
 
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0);
         border-radius: 15px;
 
         width: 100%;
@@ -178,15 +282,25 @@
     }
 
     .button-content {
+        position: relative;
+
         display: flex;
         flex-direction: row;
+
+        align-items: center;
+
+        width: 100%;
     }
 
     img {
         margin: 5px;
 
-        width: 41x;
-        height: 41px;
+        margin-top: 7px;
+        margin-right: -1px;
+        margin-left: 7px;
+
+        width: 39px;
+        height: 39px;
 
         border-radius: 10px;
         border: 1px solid rgba(255, 255, 255, 0.3);
@@ -201,6 +315,8 @@
         justify-content: center;
 
         color: white;
+
+        margin-left: 9px;
     }
 
     .text {
@@ -209,23 +325,41 @@
         margin: 0px;
     }
 
+    .cont-type {
+        margin-top: 0px !important;
+
+        font-size: 15px;
+        font-weight: 800;
+
+        opacity: 0.55;
+    }
+
     .subtext {
         display: flex;
 
+        align-items: center;
+        justify-content: start;
+        justify-items: center;
+
         font-weight: 500;
         font-size: 15px;
+
+        max-width: 600px;
 
         opacity: 0.7;
     }
 
     .subtext p {
+        color: white;
+
         margin: 0px;
         margin-right: 5px;
     }
 
-    button:hover {
-        transform: translateX(15px);
+    .button:hover {
+        transform: translateX(5px);
 
+        background: rgba(255, 255, 255, 0.1);
         box-shadow: 0px 10px 30px 10px rgba(0, 0, 0, 0.2);
 
         z-index: 2;

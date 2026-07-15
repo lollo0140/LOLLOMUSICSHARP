@@ -13,3 +13,7 @@ export let accountData = writable(nonLoggedData);
 export async function setDefault() {
     accountData.set(nonLoggedData);
 }
+
+export function isLogged() {
+    return accountData.logged;
+}

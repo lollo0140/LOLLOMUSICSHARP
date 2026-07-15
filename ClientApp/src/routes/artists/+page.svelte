@@ -8,21 +8,25 @@
     import { page } from "$app/state";
     import { GetDefPng } from "../../scripts/defPngManager";
     import { fly } from "svelte/transition";
+    import { SetArtistSubscribe } from "../../scripts/savedElements";
+    import PageHeader from "../../svelte_components/reusable/PageHeader.svelte";
+    import { GetArtistPage } from "../../scripts/browser";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
 
-    let artistDescription = $derived.by( () =>
-    {
-        let Pstrings = content.header.headerDescription.replace(content.header.wikipediaLink, "")
+    let artistDescription = $derived.by(() => {
+        let Pstrings = content.header.headerDescription.replace(
+            content.header.wikipediaLink,
+            "",
+        );
 
-        let paragraph = Pstrings.split(".")
+        let paragraph = Pstrings.split(".");
 
-        paragraph.splice(paragraph.length - 1, 1)
+        paragraph.splice(paragraph.length - 1, 1);
 
         return paragraph.join(".<br><br>") + ".";
-
-    })
+    });
 
     let imgSrc = $state();
     let subscribed = $state();
@@ -46,13 +50,7 @@
     onMount(async () => {
         SetPageButtons([]);
         console.log("loading artist: ", quary);
-        content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke(
-                "getPageData",
-                "artist",
-                quary,
-            ),
-        );
+        content = await GetArtistPage(quary);
 
         console.log(content);
 
@@ -65,34 +63,45 @@
 
 {#if content != undefined && contentVisible}
     <div in:fly={{ y: -50 }}>
-        <div class="header">
-            <img
-                src={imgSrc}
-                alt=""
-                onerror={async () => {
-                    imgSrc = await GetDefPng("artist");
-                }}
-            />
-
+        <PageHeader bgImmage={imgSrc} label={"ARTIST"}>
             <div class="artist-info">
                 <div>
-                    <p class="title">{content.header.headerTitle}</p>
+                    <p class="type"></p>
 
-                    {#if content.header.subscribeCount != "0"}
-                        <p class="subscribe-count">
-                            {content.header.subscribeCount} subscribed
-                        </p>
-                    {/if}
-                    {#if content.header.listenersCount != "no data"}
-                        <p class="streams">{content.header.listenersCount}</p>
-                    {/if}
+                    <p class="title">
+                        {content.header.headerTitle.toUpperCase()}
+                    </p>
+
+                    <div class="stats">
+                        {#if content.header.subscribeCount != "0"}
+                            <p class="subscribe-count">
+                                {content.header.subscribeCount} SUBSCRIBED
+                            </p>
+                        {/if}
+                        {#if content.header.listenersCount != "no data"}
+                            <p class="streams">
+                                {content.header.listenersCount.toUpperCase()}
+                            </p>
+                        {/if}
+                    </div>
                 </div>
 
-                <button class="sub-button">
-                    {subscribed ? "Subscribed" : "Subscribe"}
-                </button>
+                <div class="PL-actions">
+                    <button
+                        style=" {subscribed
+                            ? 'color: black; background: white;'
+                            : ''}"
+                        class="sub-button"
+                        onclick={() => {
+                            SetArtistSubscribe(quary, !subscribed);
+                            subscribed = !subscribed;
+                        }}
+                    >
+                        {subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
+                    </button>
+                </div>
             </div>
-        </div>
+        </PageHeader>
 
         <div class="sections">
             {#each content.sections as sec}
@@ -117,7 +126,11 @@
                 <p class="sec-title">About {content.header.headerTitle}</p>
 
                 <div style="margin: 20px;">
-                    <p style="color: white; font-size: 18px; line-height: 20px; opacity: 0.7; font-weight: 500;">{@html artistDescription}</p>
+                    <p
+                        style="color: white; font-size: 18px; line-height: 20px; opacity: 0.7; font-weight: 500;"
+                    >
+                        {@html artistDescription}
+                    </p>
                 </div>
             </div>
         {/if}
@@ -129,6 +142,33 @@
 {/if}
 
 <style>
+    .PL-actions {
+        height: 56px;
+        min-width: 100px;
+
+        border-top: 1px solid rgba(255, 255, 255, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+
+        margin-top: 20px;
+        margin-bottom: 20px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding-left: 5px;
+        padding-right: 5px;
+
+        gap: 15px;
+    }
+
+    .type {
+        opacity: 0.8;
+        font-size: 24px;
+        font-weight: 800;
+        color: white;
+    }
+
     .sec-title {
         margin-top: 60px;
 
@@ -147,21 +187,21 @@
     }
 
     .sub-button {
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        border-radius: 10px;
-        background: rgba(255, 255, 255, 0.1);
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.15);
 
-        backdrop-filter: blur(10px);
+        height: 33px;
 
         color: white;
         font-weight: 800;
-        font-size: 15px;
+        font-size: 20px;
 
-        padding: 15px;
+        padding-left: 10px;
+        padding-right: 10px;
 
         cursor: pointer;
 
-        margin-top: 35px;
+        transition: all 100ms;
     }
 
     .sub-button:hover {
@@ -169,10 +209,14 @@
     }
 
     .title {
+
+        max-width: 300px;
+
         font-size: 120px;
         font-weight: 900;
 
-        margin: 0px;
+        margin-bottom: 20px;
+        margin-top: 20px;
     }
     .streams {
         font-size: 18px;
@@ -191,42 +235,18 @@
         margin: 0px;
     }
 
+    .stats {
+        margin-bottom: 20px;
+        margin-top: 20px;
+    }
+
     .artist-info {
-        position: absolute;
-
         color: white;
-
-        bottom: 20px;
-        left: 20px;
 
         display: flex;
         flex-direction: column;
 
         justify-items: center;
         align-items: start;
-    }
-
-    .header {
-        position: relative;
-
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
-
-        overflow: hidden;
-        border-radius: 16px;
-
-        height: 400px;
-    }
-
-    .header img {
-        position: absolute;
-
-        margin: 0px;
-
-        width: 100%;
-        object-fit: cover;
-
-        -webkit-mask-image: linear-gradient(to bottom, black, transparent 70%);
-        mask-image: linear-gradient(to left, black, transparent);
     }
 </style>

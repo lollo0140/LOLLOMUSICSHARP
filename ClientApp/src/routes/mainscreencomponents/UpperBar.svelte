@@ -11,7 +11,6 @@
     }
 
     SetPageButtons([]);
-
 </script>
 
 <script>
@@ -35,13 +34,12 @@
 </script>
 
 <div class="upBar">
-    <div style="margin-right: 8px; display: flex;">
+    <div style="margin-right: 8px; display: flex; gap: 5px;">
         <button
             class={!canGoBack ? "unpressable" : ""}
             onclick={() => {
                 navigation.back();
             }}
-            style="border-top-right-radius: 0px; border-bottom-right-radius: 0px; border-right: none;"
         >
             <img
                 style="transform: scaleX(-1);"
@@ -55,7 +53,6 @@
             onclick={() => {
                 navigation.forward();
             }}
-            style="border-top-left-radius: 0px; border-bottom-left-radius: 0px; border-left: 0px;"
         >
             <img src="/assets/arrow.png" alt="" />
         </button>
@@ -87,12 +84,12 @@
     }
 
     button {
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
         height: 42px;
         width: 42px;
 
-        border-radius: 17px;
+        border-radius: 30px;
 
         padding: 0px;
         margin-right: 0px;
@@ -103,6 +100,8 @@
         color: rgba(255, 255, 255, 0.7);
         font-size: 15px;
         font-weight: 900;
+
+        cursor: pointer;
     }
 
     button:hover {
@@ -113,7 +112,7 @@
     }
 
     button img {
-        width: 25px;
+        width: 20px;
 
         margin-left: 1px;
         margin-top: 3px;

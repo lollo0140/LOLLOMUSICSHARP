@@ -5,6 +5,7 @@
 
     import { onMount } from "svelte";
     import { fly } from "svelte/transition";
+    import { reloadSidebarList } from "../mainscreencomponents/navigation_bar.svelte";
 
     let content = $state(undefined);
 
@@ -150,7 +151,7 @@
     });
 </script>
 
-<p class="page-title">Your Library</p>
+<p class="page-title">YOUR LIBRARY</p>
 
 <div class="lib-content">
     {#if content == undefined}

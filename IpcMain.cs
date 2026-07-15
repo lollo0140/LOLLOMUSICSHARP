@@ -170,7 +170,7 @@ class IpcMain
         //log window
         registerHandle(win, "openLog", async () =>
         {
-            openLogWin(win);
+            await openLogWin(win);
         });
 
         registerHandle(win, "loginYT", () =>
@@ -212,6 +212,87 @@ class IpcMain
         RegisterHomeHandlers(win);
         RegisterSearchHandlers(win);
 
+        registerHandle(win, "GetFromDB", (string id, string filter) =>
+        {
+
+            DB_filter F;
+
+
+            switch (filter)
+            {
+                case "album":
+                    F = DB_filter.ALBUM;
+                    break;
+
+                case "playlist":
+                    F = DB_filter.PLAYLIST;
+                    break;
+
+                case "artist":
+                    F = DB_filter.ARTIST;
+                    break;
+
+                case "library":
+                    F = DB_filter.LIBRARY;
+                    break;
+
+                case "cached":
+                    F = DB_filter.CACHEDSONG;
+                    break;
+
+                case "downloaded":
+                    F = DB_filter.DOWNLOADED;
+                    break;
+
+                default:
+                    return "none";
+            }
+
+            return JsonSerializer.Serialize(YTClient.GetFromLocalDB(F, id));
+        });
+
+        registerHandle(win, "subscribeArtist", async (string id, bool state) =>
+        {
+            YTClient.InteractionsEndpoint.SetArtistSubscription(id, state);
+        });
+
+        registerHandle(win, "setSaveAlbum", (string browseId, bool state) =>
+        {
+
+            YTClient.InteractionsEndpoint.SetPlaylistSave(browseId, state);
+
+        });
+
+        registerHandle(win, "setVideoLike", async (string id, string likeStatus) =>
+        {
+
+            LikeStatus likeStatusFinal = LikeStatus.NEUTRAL;
+
+            switch (likeStatus)
+            {
+                case "LIKE":
+                    likeStatusFinal = LikeStatus.LIKE;
+                    break;
+                case "DISLIKE":
+                    likeStatusFinal = LikeStatus.DISLIKE;
+                    break;
+                case "NEUTRAL":
+                    likeStatusFinal = LikeStatus.NEUTRAL;
+                    break;
+            }
+
+            YTClient.InteractionsEndpoint.SetSongLikeStatus(id, likeStatusFinal);
+
+        });
+
+        registerHandle(win, "getSearchSugg", async (string key) =>
+        {
+
+            JsonArray sugesstions = await YTClient.SearchEndpoint.GetSearchSugg(key);
+
+            return JsonSerializer.Serialize(sugesstions);
+
+        });
 
         registerHandle(win, "getPageData", async (string type, string browseId) =>
         {
@@ -239,6 +320,13 @@ class IpcMain
 
             return Return;
 
+        });
+
+
+        //add to playlist
+        registerHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
+        {
+            YTClient.InteractionsEndpoint.GetAddToPlaylistMenu
         });
 
     }

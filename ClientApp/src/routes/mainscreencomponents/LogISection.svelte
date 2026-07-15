@@ -14,9 +14,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="{open
-        ? 'loginDivOpen'
-        : 'loginDivClosed'} lollo-appstyle-DivContainer"
+    class={open ? "loginDivOpen" : "loginDivClosed"}
     onmouseenter={() => {
         open = true;
     }}
@@ -24,9 +22,9 @@
         open = false;
     }}
 >
-    <img src={$accountData.imgUrl} alt="" />
-
     {#if open}
+        <img src={$accountData.imgUrl} alt="" />
+
         <div class="text">
             <p style="font-weight: 900;">{$accountData.name}</p>
             <p style="opacity: 0.7; font-weight: 700;">
@@ -48,10 +46,27 @@
                 }}>LOG IN</button
             >
         {/if}
+    {:else}
+        <p class="acc-name">{$accountData.name ?? "guest"}</p>
+        <img src={$accountData.imgUrl} alt="" />
     {/if}
 </div>
 
 <style>
+
+    .acc-name {
+        color: white;
+        font-size: 14px;
+
+        font-weight: 800;
+        opacity: 0.7;
+
+        margin-top: 12px;
+        margin-left: 10px;
+
+
+    }
+
     .loginDivClosed {
         display: flex;
 
@@ -64,9 +79,14 @@
         width: auto;
         height: 40px;
 
-        border-radius: 17px;
+        border-radius: 30px;
 
         backdrop-filter: blur(10px) brightness(0.6);
+
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
 
     .loginDivOpen {
@@ -84,6 +104,11 @@
         border-radius: 45px;
 
         backdrop-filter: blur(10px) brightness(0.6);
+
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
 
     .text {
@@ -101,7 +126,7 @@
 
     .loginDivClosed img {
         margin: 6px;
-        border-radius: 10px;
+        border-radius: 30px;
     }
 
     .loginDivOpen img {

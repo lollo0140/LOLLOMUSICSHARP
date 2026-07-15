@@ -65,6 +65,9 @@
     import AppContent from "./mainscreencomponents/AppContent.svelte";
     import { fade } from "svelte/transition";
     import MiniPlayer from "./mainscreencomponents/MiniPlayer.svelte";
+    import { setUpLikedList } from "../stores/songDataBase.js";
+    import ContextMenu, { closeContextMenu, forceCloseMenu } from "./ContextMenu.svelte";
+    import AddToPlaylistMenu from "./AddToPlaylistMenu.svelte";
 
     async function ChangeWinState() {
         if (!opened) {
@@ -108,6 +111,9 @@
         const logged = await ipcRenderer.lolloInvoke("loginYT");
 
         if (logged) {
+
+            setUpLikedList()
+
             let logInfo = JSON.parse(
                 await ipcRenderer.lolloInvoke("getLogInfo"),
             );
@@ -121,6 +127,15 @@
 
             accountData.set(logData);
         }
+
+        document.addEventListener('click', (e) => {
+            closeContextMenu(e);
+        })
+
+        document.addEventListener('scroll', () => {
+            forceCloseMenu()
+        },true)
+
     });
 
     let { children } = $props();
@@ -141,6 +156,8 @@
             <AppContent>
                 {@render children?.()}
             </AppContent>
+
+            <AddToPlaylistMenu/>
         </div>
     {:else}
         <div in:fade class="contentAnimator">
@@ -149,6 +166,10 @@
     {/if}
 </main>
 
+<ContextMenu/>
+
+
+
 <style>
     @import "./lollo_appstyles.css";
 
@@ -156,21 +177,10 @@
         background: transparent;
     }
 
-    .login {
-        position: fixed;
-
-        left: 0px;
-        bottom: 0px;
-
-        border: solid rgba(255, 255, 255, 0.3) 1px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 15px;
-    }
-
     main {
         background: rgba(0, 0, 0, 0.95);
         border: solid rgba(255, 255, 255, 0.3) 1px;
-        border-radius: 46px;
+        border-radius: 40px;
 
         position: fixed;
 

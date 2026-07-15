@@ -1,11 +1,15 @@
 <script>
     import { onMount } from "svelte";
     import { NavigateTo } from "../../scripts/navigationScript";
+    import { GetDefPng } from "../../scripts/defPngManager";
 
     let { content } = $props();
 
+    let imgSrc = $state();
+
     onMount(() => {
         console.log(content);
+        imgSrc = content.thumbnails[0];
     });
 </script>
 
@@ -14,7 +18,7 @@
         NavigateTo("/playlist", [`browseid=${content.browseId}`], true);
     }}
 >
-    <img src={content.thumbnails[0]} alt="" />
+    <img src={imgSrc} onerror={() => {imgSrc = "/assets/defpng/def_playlist_icon.png"}} alt="" />
 </button>
 
 <style>

@@ -9,8 +9,8 @@
 }
 
 .lollo-appstyle-DivContainer {
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
 
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
 }
@@ -40,7 +40,7 @@
 
 .page-title {
     color: white;
-    font-size: 60px;
+    font-size: 48px;
     font-weight: 900;
 
     margin: 20px;
