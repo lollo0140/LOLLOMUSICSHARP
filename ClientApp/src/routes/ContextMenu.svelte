@@ -4,6 +4,7 @@
     import { text } from "@sveltejs/kit";
     import { SetPlaylistSave } from "../scripts/savedElements";
     import { NavigateToArtist } from "../scripts/navigationScript";
+    import { AddToPlaylist } from "./AddToPlaylistMenu.svelte";
 
     let DATA = $state();
 
@@ -90,8 +91,12 @@
 
     async function SetUpAlbumButtons(data) {
         let content = await GetAlbumPage(data.browseId);
-        buttons = [];
         console.log(content);
+
+        const ids = content.items.map((x) => x.id);
+        console.log(ids);
+
+        buttons = [];
 
         //save action
 
@@ -132,9 +137,7 @@
         if (content?.items) {
             buttons.push({
                 text: "ADD TO PLAYLIST",
-                click: () => {
-
-                },
+                click: () => {AddToPlaylist(ids)},
             });
         }
     }

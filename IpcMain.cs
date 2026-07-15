@@ -324,9 +324,14 @@ class IpcMain
 
 
         //add to playlist
+        registerHandle(win, "addToPlaylistMenu", async () =>
+        {
+           return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
+        });
+
         registerHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
         {
-            YTClient.InteractionsEndpoint.GetAddToPlaylistMenu
+            YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
         });
 
     }
