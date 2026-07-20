@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import SongButton from "./SongButton.svelte";
+    import { SetCurrentPlaylist } from "../../routes/audioPlayer/playerStore";
 
     let { content, renderPhoto= true } = $props();
 
@@ -14,7 +15,9 @@
 
 <div class="list-renderer">
     {#each content as item, index}
-        <SongButton content={item} {index} renderPhoto={renderPhoto}/>
+        <SongButton onclick={() => {
+            SetCurrentPlaylist(content, index)
+        }} content={item} {index} renderPhoto={renderPhoto}/>
     {/each}
 </div>
 

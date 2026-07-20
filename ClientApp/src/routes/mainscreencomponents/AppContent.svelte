@@ -1,9 +1,9 @@
 <script>
     import NavigationBar from "./navigation_bar.svelte";
-    import PlayerControlls from "./player_controlls.svelte";
     import PlayerDisplay from "./player_display.svelte";
     import LogISection from "./LogISection.svelte";
     import UpperBar from "./UpperBar.svelte";
+
 
     let { children } = $props();
 </script>
@@ -29,9 +29,13 @@
         <div class="display lollo-appstyle-DivContainer">
             <PlayerDisplay />
         </div>
+
+
     </div>
 
 </div>
+
+
 
 <style>
 
@@ -82,6 +86,11 @@
         right: 0px;
         top: 0px;
         bottom: 0px;
+
+        border-radius: 25px;
+        overflow: hidden;
+        overflow-y: auto;
+        scrollbar-width: none;
     }
 
     .app-navigator {

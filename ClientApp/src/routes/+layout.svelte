@@ -19,8 +19,8 @@
                         gsap.to(".MainTag", {
                             left: 100,
                             right: 100,
-                            top: 50,
-                            height: " calc(100% - 198px)",
+                            top: 20,
+                            height: " calc(100% - 198px - 15px)",
                             duration: 0.4,
                             ease: "back.out(1)",
                             opacity: 1,
@@ -63,11 +63,23 @@
     import { accountData } from "../stores/settingsStore.js";
     import { onMount } from "svelte";
     import AppContent from "./mainscreencomponents/AppContent.svelte";
-    import { fade } from "svelte/transition";
+    import { fade, fly } from "svelte/transition";
     import MiniPlayer from "./mainscreencomponents/MiniPlayer.svelte";
     import { setUpLikedList } from "../stores/songDataBase.js";
-    import ContextMenu, { closeContextMenu, forceCloseMenu } from "./ContextMenu.svelte";
+    import ContextMenu, {
+        closeContextMenu,
+        forceCloseMenu,
+    } from "./ContextMenu.svelte";
     import AddToPlaylistMenu from "./AddToPlaylistMenu.svelte";
+    import EditPLaylistMenu from "./EditPLaylistMenu.svelte";
+    import AudioPlayer from "./audioPlayer/audioPlayer.svelte";
+    import Controlls from "./mainscreencomponents/Controlls.svelte";
+
+    import { queue, index, playState } from "./audioPlayer/playerStore.js";
+
+    let currentSong = $derived.by(() => {
+        return $queue[$index] ?? undefined;
+    });
 
     async function ChangeWinState() {
         if (!opened) {
@@ -111,8 +123,7 @@
         const logged = await ipcRenderer.lolloInvoke("loginYT");
 
         if (logged) {
-
-            setUpLikedList()
+            setUpLikedList();
 
             let logInfo = JSON.parse(
                 await ipcRenderer.lolloInvoke("getLogInfo"),
@@ -128,14 +139,17 @@
             accountData.set(logData);
         }
 
-        document.addEventListener('click', (e) => {
+        document.addEventListener("click", (e) => {
             closeContextMenu(e);
-        })
+        });
 
-        document.addEventListener('scroll', () => {
-            forceCloseMenu()
-        },true)
-
+        document.addEventListener(
+            "scroll",
+            () => {
+                forceCloseMenu();
+            },
+            true,
+        );
     });
 
     let { children } = $props();
@@ -157,24 +171,47 @@
                 {@render children?.()}
             </AppContent>
 
-            <AddToPlaylistMenu/>
+            <AddToPlaylistMenu />
+            <EditPLaylistMenu />
         </div>
     {:else}
         <div in:fade class="contentAnimator">
             <MiniPlayer openCommand={ChangeWinState} />
         </div>
     {/if}
+    <AudioPlayer />
 </main>
 
-<ContextMenu/>
+{#if opened && currentSong != undefined}
+    <div class="controllsWrapper" transition:fly={{ y: -20 }}>
+        <Controlls />
+    </div>
+{/if}
 
-
+<ContextMenu />
 
 <style>
     @import "./lollo_appstyles.css";
 
     :global(body) {
         background: transparent;
+    }
+
+    .controllsWrapper {
+        position: absolute;
+
+        z-index: 2;
+
+        height: 65px;
+
+        border-radius: 45px;
+
+        top: calc(100% - 178px );
+        left: 300px;
+        right: 300px;
+
+        background: rgba(0, 0, 0, 0.95);
+
     }
 
     main {

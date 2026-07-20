@@ -1,10 +1,23 @@
 <script module>
     import { fly } from "svelte/transition";
-    import { GetAlbumPage, GetSavedPage } from "../scripts/browser";
+    import {
+        GetAlbumPage,
+        GetArtistPage,
+        GetPlaylistPage,
+        GetSavedPage,
+    } from "../scripts/browser";
     import { text } from "@sveltejs/kit";
-    import { SetPlaylistSave } from "../scripts/savedElements";
-    import { NavigateToArtist } from "../scripts/navigationScript";
+    import {
+        DeletePlaylist,
+        SetArtistSubscribe,
+        SetPlaylistSave,
+    } from "../scripts/savedElements";
+    import {
+        NavigateToAlbum,
+        NavigateToArtist,
+    } from "../scripts/navigationScript";
     import { AddToPlaylist } from "./AddToPlaylistMenu.svelte";
+    import { EditPlaylist } from "./EditPLaylistMenu.svelte";
 
     let DATA = $state();
 
@@ -39,18 +52,26 @@
             } else {
                 return "ALBUM";
             }
+        } else if (DATA.type === "video" || DATA.type === "track") {
+            if (DATA?.artists?.[0]?.artistName != undefined) {
+                return DATA.artists[0].artistName;
+            }
         }
     });
 
-    export async function openContextMenu(e, data) {
+    export async function openContextMenu(e, data, changeOpacity = true) {
         buttons = [];
+
+        console.log(data);
 
         if (lastCliked) {
             lastCliked.style.opacity = 1;
         }
 
-        e.srcElement.style.opacity = 0.2;
-        lastCliked = e.srcElement;
+        if (changeOpacity) {
+            e.srcElement.style.opacity = 0.2;
+            lastCliked = e.srcElement;
+        }
 
         DATA = data;
 
@@ -65,8 +86,17 @@
                 SetUpAlbumButtons(data);
                 break;
             case "playlist":
+                SetUpPlaylistButtons(data);
                 break;
             case "artist":
+                SetUpArtistButtons(data);
+                break;
+
+            case "video":
+                SetUpVideoButtons(data);
+                break;
+            case "track":
+                SetUpVideoButtons(data);
                 break;
         }
     }
@@ -137,7 +167,112 @@
         if (content?.items) {
             buttons.push({
                 text: "ADD TO PLAYLIST",
-                click: () => {AddToPlaylist(ids)},
+                click: () => {
+                    AddToPlaylist(ids);
+                },
+            });
+        }
+    }
+
+    async function SetUpPlaylistButtons(data) {
+        let content = await GetPlaylistPage(data.browseId);
+        console.log(content);
+
+        const ids = content.items.map((x) => x.id);
+        console.log(ids);
+
+        buttons = [];
+
+        if (content?.data?.canEdit || content?.data?.canDelete) {
+            if (content?.data?.canEdit) {
+                buttons.push({
+                    text: "EDIT PLAYLIST",
+                    click: () => {
+                        EditPlaylist(content);
+                    },
+                });
+            }
+            if (content?.data?.canDelete) {
+                buttons.push({
+                    text: "DELETE PLAYLIST",
+                    click: () => {
+                        DeletePlaylist(content.data.playlistId);
+                    },
+                });
+            }
+        } else {
+            if (content?.data?.saved) {
+                buttons.push({
+                    text: "REMOVE FROM LIBRARY",
+                    click: () => {
+                        SetPlaylistSave(content.data.playlistId, false);
+                    },
+                });
+            } else {
+                buttons.push({
+                    text: "ADD TO LIBRARY",
+                    click: () => {
+                        SetPlaylistSave(content.data.playlistId, false);
+                    },
+                });
+            }
+        }
+
+        if (content?.data?.shareLink) {
+            buttons.push({
+                text: "COPY LINK",
+                click: () => {},
+            });
+        }
+
+        if (content?.items) {
+            buttons.push({
+                text: "ADD TO PLAYLIST",
+                click: () => {
+                    AddToPlaylist(ids);
+                },
+            });
+        }
+    }
+
+    async function SetUpArtistButtons(data) {
+        let content = await GetArtistPage(data.browseId);
+
+        if (content.header.subscribed) {
+            buttons.push({
+                text: "UNSUBSCRIBE",
+                click: () => {
+                    SetArtistSubscribe(data.browseId, false);
+                },
+            });
+        } else {
+            buttons.push({
+                text: "SUBSCRIBE",
+                click: () => {
+                    SetArtistSubscribe(data.browseId, true);
+                },
+            });
+        }
+    }
+
+    async function SetUpVideoButtons(data) {
+        console.log(data);
+
+        if (data.album.albumId != undefined) {
+            buttons.push({
+                text: "GO TO ALBUM",
+                click: () => {
+                    NavigateToAlbum(data.album.albumId);
+                },
+            });
+        }
+
+        if (data?.artists?.[0]?.artistId != undefined) {
+            buttons.push({
+                text: "GO TO ARTIST",
+                click: () => {
+                    NavigateToArtist(data?.artists[0]?.artistId);
+                },
             });
         }
     }

@@ -3,26 +3,25 @@
     import { NavigateTo } from "../../scripts/navigationScript";
     import { GetDefPng } from "../../scripts/defPngManager";
     import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
+    import { openContextMenu } from "../../routes/ContextMenu.svelte";
 
-    let { content, index, renderPhoto = true } = $props();
+    let { onclick, content, index, renderPhoto = true } = $props();
 
-    let Liked = $derived.by( () => {
+    let Liked = $derived.by(() => {
         if (content === undefined) {
-            return false
+            return false;
         }
 
-        let itemfound = $likedSongs.find( id => content.id === id );
+        let itemfound = $likedSongs.find((id) => content.id === id);
 
         if (itemfound != undefined) {
             return true;
         }
 
-        return false
-
+        return false;
     });
 
     let IsLocal = false;
-
 
     let imgurl = $state();
 
@@ -37,12 +36,17 @@
     });
 </script>
 
-<div class="button">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+    class="button"
+    oncontextmenu={(e) => {
+        e.preventDefault();
+        openContextMenu(e, content, false);
+    }}
+>
     <div class="button-content">
         <button
-            onclick={() => {
-                console.log("clicked song: " + content.id);
-            }}
+            {onclick}
             class="song-button">.</button
         >
 
@@ -126,9 +130,12 @@
         </div>
 
         <div class="actions-div" style="pointer-events: all;">
-            <button style="opacity: {Liked ? '1' : '0.3'};" onclick={ () => {
-                SetVideoLike(content.id, !Liked);
-            }}>
+            <button
+                style="opacity: {Liked ? '1' : '0.3'};"
+                onclick={() => {
+                    SetVideoLike(content.id, !Liked);
+                }}
+            >
                 <img src="/assets/badge/like.png" alt="" />
             </button>
             <button style="opacity: {IsLocal ? '1' : '0.3'};">
@@ -262,7 +269,6 @@
     }
 
     .button {
-
         display: flex;
 
         position: relative;
@@ -308,7 +314,6 @@
     }
 
     .data-strip {
-
         display: flex;
         flex-direction: column;
 

@@ -25,3 +25,7 @@ export async function NavigateTo(route, params, refresh = false) {
 export async function NavigateToArtist(browseId) {
     NavigateTo("/artists", [`browseid=${browseId}`])
 }
+
+export async function NavigateToAlbum(browseId) {
+    NavigateTo("/album", [`browseid=${browseId}`])
+}

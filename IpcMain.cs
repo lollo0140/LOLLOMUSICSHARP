@@ -15,6 +15,22 @@ class IpcMain
 
     public static YTMusicSharp YTClient;
 
+
+    public class AudioHandler
+    {
+
+        public AudioHandler() { }
+
+        public YTMusicSharp GetYTClient()
+        {
+            return YTClient;
+        }
+        public async Task<string> GetAudioData(string id) => await YTClient.GetYTAudioById(id);
+
+    }
+
+
+
     public static void registerHandle(BrowserWindow win, string eventName, Delegate callback)
     {
 
@@ -175,13 +191,16 @@ class IpcMain
 
         registerHandle(win, "loginYT", () =>
         {
-            if (File.Exists("./ytheaders.json"))
+            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            string jsonPath = Path.Join(baseDirectory, "ytheaders.json");
+            if (File.Exists(jsonPath))
             {
-                JsonObject headers = (JsonObject)JsonNode.Parse(File.ReadAllText("./ytheaders.json"));
+
+                JsonObject headers = (JsonObject)JsonNode.Parse(File.ReadAllText(jsonPath));
 
                 YTClient = new YTMusicSharp(
                     youtubHeaders: headers,
-                    workspacePath: "./"
+                    workspacePath: baseDirectory
                 );
                 return true;
             }
@@ -302,7 +321,7 @@ class IpcMain
             switch (type)
             {
                 case "album":
-                    Return = JsonSerializer.Serialize(await YTClient.BrowseEndpoint.FetchAlbumData(browseId));
+                    Return = JsonSerializer.Serialize(await YTClient.BrowseEndpoint.FetchAlbumDataSongsOnly(browseId));
                     break;
 
                 case "playlist":
@@ -326,13 +345,68 @@ class IpcMain
         //add to playlist
         registerHandle(win, "addToPlaylistMenu", async () =>
         {
-           return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
+            return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
         });
 
         registerHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
         {
             YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
         });
+
+        //PLAYLISTS -------------------------------
+        registerHandle(win, "EditPlaylistInfo", async (string playlistId, string name, string desc, string privacy) =>
+        {
+
+            PrivacyStatus PS = PrivacyStatus.UNLISTED;
+
+            switch (privacy)
+            {
+                case "UNLISTED":
+                    PS = PrivacyStatus.UNLISTED;
+                    break;
+
+                case "PRIVATE":
+                    PS = PrivacyStatus.PRIVATE;
+                    break;
+
+                case "PUBLIC":
+                    PS = PrivacyStatus.PUBLIC;
+                    break;
+            }
+
+            YTClient.InteractionsEndpoint.EditPLaylist(playlistId, pTitle: name, pDescriprtion: desc, privacyStatus: PS);
+
+        });
+
+        registerHandle(win, "CreatePlaylistInfo", async (string name, string desc, string privacy) =>
+        {
+
+            PrivacyStatus PS = PrivacyStatus.UNLISTED;
+
+            switch (privacy)
+            {
+                case "UNLISTED":
+                    PS = PrivacyStatus.UNLISTED;
+                    break;
+
+                case "PRIVATE":
+                    PS = PrivacyStatus.PRIVATE;
+                    break;
+
+                case "PUBLIC":
+                    PS = PrivacyStatus.PUBLIC;
+                    break;
+            }
+
+            await YTClient.InteractionsEndpoint.CreatePlaylist(pTitle: name, pDescriprtion: desc, privacyStatus: PS);
+
+        });
+
+        registerHandle(win, "DeletePlaylist", async (string playlistId) =>
+        {
+            await YTClient.InteractionsEndpoint.DeletePLaylist(playlistId);
+        });
+
 
     }
 

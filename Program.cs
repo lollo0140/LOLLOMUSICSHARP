@@ -9,6 +9,7 @@ using ElectronNET.API.Entities;
 using System.Threading;
 using System.Text.Json.Nodes;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
 class Program
 {
@@ -23,9 +24,18 @@ class Program
         // Configura Electron
         builder.WebHost.UseElectron(args);
 
+        builder.Services.AddSingleton<IpcMain.AudioHandler>();
+
         var app = builder.Build();
 
-        // Serviamo i file statici di Svelte (quando l'app è compilata)
+        app.MapGet("/api/audio/{id}", async (string id, IpcMain.AudioHandler handler) =>
+        {
+            string? path = await handler.GetAudioData(id);
+            if (path == null) return Results.NotFound();
+
+            return Results.File(path, contentType: "audio/webm", enableRangeProcessing: true);
+        });
+
         app.UseDefaultFiles();
         app.UseStaticFiles();
 

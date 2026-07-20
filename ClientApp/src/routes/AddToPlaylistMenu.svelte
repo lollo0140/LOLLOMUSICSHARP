@@ -116,6 +116,8 @@
 
         background: none;
         border: none;
+
+        color: transparent;
     }
 
     .secTitle {
