@@ -6,7 +6,7 @@ const defaultPngs = {
 }
 
 
-export async function GetDefPng(type) {
+export function GetDefPng(type) {
 
     switch (type) {
 

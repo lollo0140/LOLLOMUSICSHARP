@@ -110,7 +110,7 @@
 
                     <div class="sec-content">
                         {#if sec.items[0].type === "track" || sec.items[0].type === "video"}
-                            <SongListRenderer content={sec.items} />
+                            <SongListRenderer content={sec.items} from={content.header.headerTitle + ": popular songs"}/>
                         {:else}
                             {#each sec.items as item}
                                 <SquareButton content={item} />
@@ -188,6 +188,7 @@
 
     .sub-button {
         border-radius: 20px;
+        border: none;
         background: rgba(255, 255, 255, 0.15);
 
         height: 33px;

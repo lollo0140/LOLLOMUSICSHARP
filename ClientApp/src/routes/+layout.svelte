@@ -197,6 +197,7 @@
         background: transparent;
     }
 
+    
     .controllsWrapper {
         position: absolute;
 
@@ -211,6 +212,7 @@
         right: 300px;
 
         background: rgba(0, 0, 0, 0.95);
+        border: solid rgba(255, 255, 255, 0.3) 1px;
 
     }
 

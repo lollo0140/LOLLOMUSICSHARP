@@ -46,3 +46,62 @@
     margin: 20px;
 
 }
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.15);
+    /* Traccia non riprodotta */
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+/* Hover sulla traccia intera */
+input[type="range"]:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* --- THUMB (Il pallino/drag per Webkit / Electron) --- */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+
+    /* Stile pulito e luminoso */
+    background: #ffffff;
+
+    /* Effetto fluido al passaggio del mouse */
+    transition: transform 0.15s ease-in-out, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Quando passi sopra lo slider col mouse, il pallino cresce */
+input[type="range"]:hover::-webkit-slider-thumb {
+    transform: scale(1.3);
+    background: #ffffff;
+}
+
+/* Quando lo trascini (active) */
+input[type="range"]:active::-webkit-slider-thumb {
+    transform: scale(1.1);
+    background: #e0e0e0;
+}
+
+/* --- PER FIREFOX (se serve) --- */
+input[type="range"]::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: none;
+    border-radius: 50%;
+    background: #ffffff;
+    transition: transform 0.15s ease-in-out;
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+    transform: scale(1.3);
+}

@@ -28,6 +28,7 @@ class Program
 
         var app = builder.Build();
 
+
         app.MapGet("/api/audio/{id}", async (string id, IpcMain.AudioHandler handler) =>
         {
             string? path = await handler.GetAudioData(id);
@@ -44,23 +45,14 @@ class Program
 
         app.MapControllers();
 
-        // Gestione dello sviluppo: reindirizza le chiamate al server Vite di Svelte
-        if (app.Environment.IsDevelopment())
+        if (HybridSupport.IsElectronActive)
         {
-            // Se Electron è attivo, avvialo puntando al server locale di Svelte
-            if (HybridSupport.IsElectronActive)
-            {
-                CreateElectronWindow();
-            }
+            Electron.App.CommandLine.AppendSwitch("disable-gpu");
+            Electron.App.CommandLine.AppendSwitch("disable-gpu-compositing");
+
+            CreateElectronWindow();
         }
-        else
-        {
-            // In produzione, se Electron è attivo, avvialo normalmente
-            if (HybridSupport.IsElectronActive)
-            {
-                CreateElectronWindow();
-            }
-        }
+
 
         app.Run();
 
@@ -69,6 +61,8 @@ class Program
 
     static async void CreateElectronWindow()
     {
+
+
         string preloadPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "preload.js");
 
         if (!File.Exists(preloadPath))
@@ -91,6 +85,8 @@ class Program
             {
                 ContextIsolation = true,
                 NodeIntegration = false,
+                BackgroundThrottling = true,
+                Offscreen = false,
                 Preload = preloadPath
             }
         };

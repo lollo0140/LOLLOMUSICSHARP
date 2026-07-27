@@ -43,7 +43,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\.NET\YTmusicApi\YTMusicSharp.csproj" />
+        <None Update="preload.js">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\YTMusicSharp\YTMusicSharp.csproj" />
     </ItemGroup>
 
 </Project>

@@ -195,6 +195,8 @@
         margin: 0px;
         border: none;
         border-radius: 0px;
+
+        object-fit: cover;
     }
 
     .song-button {
@@ -229,7 +231,6 @@
         max-width: 170px;
         width: max-content;
 
-        white-space: nowrap;
         white-space: nowrap;
 
         text-overflow: ellipsis;
@@ -311,6 +312,8 @@
 
         border-radius: 10px;
         border: 1px solid rgba(255, 255, 255, 0.3);
+
+        object-fit: cover;
     }
 
     .data-strip {
@@ -382,25 +385,7 @@
 
     .videoImg {
         width: 72px;
+        object-fit: cover;
     }
 
-    a:link {
-        color: #ffffff;
-        margin-right: 6px;
-    }
-
-    /* 2. Stato visitato (link già cliccati in passato) */
-    a:visited {
-        color: #ffffff;
-    }
-
-    /* 3. Stato Hover (quando ci passi sopra con il mouse) */
-    a:hover {
-        color: #ffffffa7;
-    }
-
-    /* 4. Stato Attivo (mentre l'utente ci sta cliccando sopra) */
-    a:active {
-        color: #e74c3c;
-    }
 </style>

@@ -118,6 +118,7 @@
             <SongListRenderer
                 content={content.items ?? []}
                 renderPhoto={false}
+                from={(content.data.title ?? "").toUpperCase()}
             />
         </div>
     </main>
@@ -196,13 +197,6 @@
 
     .PL-actions button:hover {
         transform: translateY(-2px);
-    }
-
-    .PL-actions button img {
-    }
-
-    .PL-elements {
-        margin-top: 5px;
     }
 
     main {

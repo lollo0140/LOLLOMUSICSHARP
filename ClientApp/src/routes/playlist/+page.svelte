@@ -91,7 +91,7 @@
                             content.data.saved = !content.data.saved;
                             SetPlaylistSave(
                                 content.data.playlistId,
-                                content.data.saved,
+                                content.data.saved
                             );
                         }
                     }}
@@ -131,7 +131,7 @@
         </PageHeader>
 
         <div class="PL-elements">
-            <SongListRenderer content={content.items} />
+            <SongListRenderer content={content.items} from={(content.data.title ?? "").toUpperCase()}/>
         </div>
     </main>
 {:else}
@@ -185,13 +185,6 @@
 
         margin-left: 3px;
         margin-right: 3px;
-    }
-
-    .PL-actions button:hover {
-        transform: translateY(-2px);
-    }
-
-    .PL-actions button img {
     }
 
     .PL-elements {
