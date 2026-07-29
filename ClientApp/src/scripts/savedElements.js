@@ -6,6 +6,10 @@ export async function SetArtistSubscribe(id, state) {
 
 }
 
+export async function RemoveFromPlaylist(id, setVideoId, playlistId) {
+    window.electron.ipcRenderer.lolloInvoke("removeFromplaylist", id, setVideoId, playlistId);
+}
+
 export async function SetPlaylistSave(id, state) {
 
     window.electron.ipcRenderer.lolloInvoke("setSaveAlbum", id, state);

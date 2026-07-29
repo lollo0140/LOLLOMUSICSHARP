@@ -96,6 +96,10 @@
 
 <style>
 
+    .link {
+        text-align: start;
+    }
+
     .Bcontent {
         background: transparent;
 
@@ -177,6 +181,7 @@
     }
 
     .subtitle-div p {
+        text-align: start;
         width: fit-content;
         margin: 0px;
     }

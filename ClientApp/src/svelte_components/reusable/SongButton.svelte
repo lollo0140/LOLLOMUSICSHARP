@@ -5,7 +5,7 @@
     import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
     import { openContextMenu } from "../../routes/ContextMenu.svelte";
 
-    let { onclick, content, index, renderPhoto = true } = $props();
+    let { onclick, content, index, renderPhoto = true, fatherId = undefined } = $props();
 
     let Liked = $derived.by(() => {
         if (content === undefined) {
@@ -30,6 +30,9 @@
     }
 
     onMount(() => {
+
+        content.playlistId = fatherId;
+
         if (renderPhoto) {
             imgurl = content.thumbnails[0];
         }

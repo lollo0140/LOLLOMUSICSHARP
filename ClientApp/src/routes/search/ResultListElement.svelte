@@ -4,6 +4,9 @@
     import { onMount } from "svelte";
     import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
 
+
+
+
     let Liked = $derived.by(() => {
         if (content === undefined) {
             return false;
@@ -22,7 +25,7 @@
 
     let IsLocal = false;
 
-    let { content } = $props();
+    let { content, onclick } = $props();
 
     let imgurl = $state();
 
@@ -31,8 +34,6 @@
 
         imgurl = await GetDefPng(content.type);
     }
-
-    let onclick = $state(() => {});
 
     onMount(() => {
         if (content.type === "track") {
@@ -139,9 +140,12 @@
 
             {#if content.type === "video" || content.type === "track"}
                 <div class="actions-div" style="pointer-events: all;">
-                    <button style="opacity: {Liked ? '1' : '0.3'};" onclick={ () => {
-                        SetVideoLike(content.id, !Liked)
-                    }}>
+                    <button
+                        style="opacity: {Liked ? '1' : '0.3'};"
+                        onclick={() => {
+                            SetVideoLike(content.id, !Liked);
+                        }}
+                    >
                         <img src="/assets/badge/like.png" alt="" />
                     </button>
                     <button style="opacity: {IsLocal ? '1' : '0.3'};">
@@ -325,14 +329,6 @@
         margin: 0px;
     }
 
-    .cont-type {
-        margin-top: 0px !important;
-
-        font-size: 15px;
-        font-weight: 800;
-
-        opacity: 0.55;
-    }
 
     .subtext {
         display: flex;
@@ -369,23 +365,4 @@
         width: 72px;
     }
 
-    a:link {
-        color: #ffffff;
-        margin-right: 6px;
-    }
-
-    /* 2. Stato visitato (link già cliccati in passato) */
-    a:visited {
-        color: #ffffff;
-    }
-
-    /* 3. Stato Hover (quando ci passi sopra con il mouse) */
-    a:hover {
-        color: #ffffffa7;
-    }
-
-    /* 4. Stato Attivo (mentre l'utente ci sta cliccando sopra) */
-    a:active {
-        color: #e74c3c;
-    }
 </style>

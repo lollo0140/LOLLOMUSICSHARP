@@ -9,6 +9,7 @@
     import { text } from "@sveltejs/kit";
     import {
         DeletePlaylist,
+        RemoveFromPlaylist,
         SetArtistSubscribe,
         SetPlaylistSave,
     } from "../scripts/savedElements";
@@ -18,6 +19,7 @@
     } from "../scripts/navigationScript";
     import { AddToPlaylist } from "./AddToPlaylistMenu.svelte";
     import { EditPlaylist } from "./EditPLaylistMenu.svelte";
+    import { AddToQueue } from "./audioPlayer/playerStore";
 
     let DATA = $state();
 
@@ -34,28 +36,36 @@
     let headerImgSrc = $derived.by(() => {
         if (DATA?.thumbnails) {
             return DATA?.thumbnails[0];
+        } else {
+            return "";
         }
     });
 
     let title = $derived.by(() => {
         if (DATA?.title) {
             return DATA.title.toUpperCase();
+        } else {
+            return "";
         }
     });
 
     let subtitle = $derived.by(() => {
-        if (DATA?.type === "playlist") {
-            return "PLAYLIST";
-        } else if (DATA?.type === "album") {
-            if (DATA?.artists) {
-                return DATA.artists[0].artistName.toUpperCase();
-            } else {
-                return "ALBUM";
+        if (DATA) {
+            if (DATA?.type === "playlist") {
+                return "PLAYLIST";
+            } else if (DATA?.type === "album") {
+                if (DATA?.artists) {
+                    return DATA.artists[0].artistName.toUpperCase();
+                } else {
+                    return "ALBUM";
+                }
+            } else if (DATA.type === "video" || DATA.type === "track") {
+                if (DATA?.artists?.[0]?.artistName != undefined) {
+                    return DATA.artists[0].artistName;
+                }
             }
-        } else if (DATA.type === "video" || DATA.type === "track") {
-            if (DATA?.artists?.[0]?.artistName != undefined) {
-                return DATA.artists[0].artistName;
-            }
+        } else {
+            return "";
         }
     });
 
@@ -68,15 +78,34 @@
             lastCliked.style.opacity = 1;
         }
 
-        if (changeOpacity) {
-            e.srcElement.style.opacity = 0.2;
-            lastCliked = e.srcElement;
+        const target = e.currentTarget || e.srcElement;
+        if (changeOpacity && target) {
+            target.style.opacity = 0.2;
+            lastCliked = target;
         }
 
         DATA = data;
 
-        X = e.screenX;
-        Y = e.screenY;
+        let posX = e.clientX;
+        let posY = e.clientY;
+
+        const menuWidth = 200;
+        const menuHeight = 350;
+
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        if (posX + menuWidth > windowWidth) {
+            posX = windowWidth - menuWidth - 10;
+        }
+
+        if (posY + menuHeight > windowHeight) {
+            posY = windowHeight - menuHeight - 100;
+        }
+
+        X = Math.max(10, posX);
+        Y = Math.max(10, posY);
+
         visible = true;
 
         //loading content
@@ -101,11 +130,119 @@
         }
     }
 
+    export async function openPageContextMenu(e, content, type) {
+        buttons = [];
+
+        title = "MORE OPTIONS";
+
+        let posX = e.clientX;
+        let posY = e.clientY;
+
+        const menuWidth = 200;
+        const menuHeight = 350;
+
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        if (posX + menuWidth > windowWidth) {
+            posX = windowWidth - menuWidth - 10;
+        }
+
+        if (posY + menuHeight > windowHeight) {
+            posY = windowHeight - menuHeight - 100;
+        }
+
+        X = Math.max(10, posX);
+        Y = Math.max(10, posY);
+
+        visible = true;
+
+        const ids = content.items.map((x) => x.id);
+        console.log(ids);
+
+        switch (type) {
+            case "album":
+                buttons = [];
+
+                if (content?.items) {
+                    buttons.push({
+                        text: "ADD TO PLAYLIST",
+                        click: () => {
+                            AddToPlaylist(ids);
+                            forceCloseMenu();
+                        },
+                    });
+                }
+
+                if (content?.items != undefined) {
+                    buttons.push({
+                        text: "ADD TO QUEUE",
+                        click: () => {
+                            AddToQueue(content.items);
+                            forceCloseMenu();
+                        },
+                    });
+                }
+                break;
+
+            case "playlist":
+                buttons = [];
+
+                if (content?.data?.canEdit || content?.data?.canDelete) {
+                    if (content?.data?.canEdit) {
+                        buttons.push({
+                            text: "EDIT PLAYLIST",
+                            click: () => {
+                                EditPlaylist(content);
+                                forceCloseMenu();
+                            },
+                        });
+                    }
+                    if (content?.data?.canDelete) {
+                        buttons.push({
+                            text: "DELETE PLAYLIST",
+                            click: () => {
+                                DeletePlaylist(content.data.playlistId);
+                                forceCloseMenu();
+                            },
+                        });
+                    }
+                }
+
+                if (content?.items) {
+                    buttons.push({
+                        text: "ADD TO PLAYLIST",
+                        click: () => {
+                            AddToPlaylist(ids);
+                            forceCloseMenu();
+                        },
+                    });
+                }
+
+                if (content?.items != undefined) {
+                    buttons.push({
+                        text: "ADD TO QUEUE",
+                        click: () => {
+                            AddToQueue(content.items);
+                            forceCloseMenu();
+                        },
+                    });
+                }
+                break;
+        }
+    }
+
     export function closeContextMenu(e) {
         if (lastCliked) {
             lastCliked.style.opacity = 1;
         }
-        if (e.target != contextMenu) {
+
+        const isInsidePageMenu = e.target.closest(".page-menu");
+        const isInsideContextMenu =
+            e.target === contextMenu ||
+            (contextMenu && contextMenu.contains(e.target));
+
+        if (!isInsideContextMenu && !isInsidePageMenu) {
             visible = false;
         }
     }
@@ -135,6 +272,7 @@
                 text: "REMOVE FROM LIBRARY",
                 click: () => {
                     SetPlaylistSave(content.data.saveParam, false);
+                    forceCloseMenu();
                 },
             });
         } else {
@@ -142,6 +280,7 @@
                 text: "ADD TO LIBRARY",
                 click: () => {
                     SetPlaylistSave(content.data.saveParam, true);
+                    forceCloseMenu();
                 },
             });
         }
@@ -151,6 +290,7 @@
                 text: "SEE ARTIST",
                 click: () => {
                     NavigateToArtist(content.data.artist.browseId);
+                    forceCloseMenu();
                 },
             });
         }
@@ -160,6 +300,7 @@
                 text: "COPY LINK",
                 click: () => {
                     navigator.clipboard.writeText(content.data.shareLink);
+                    forceCloseMenu();
                 },
             });
         }
@@ -169,6 +310,17 @@
                 text: "ADD TO PLAYLIST",
                 click: () => {
                     AddToPlaylist(ids);
+                    forceCloseMenu();
+                },
+            });
+        }
+
+        if (content?.items != undefined) {
+            buttons.push({
+                text: "ADD TO QUEUE",
+                click: () => {
+                    AddToQueue(content.items);
+                    forceCloseMenu();
                 },
             });
         }
@@ -189,6 +341,7 @@
                     text: "EDIT PLAYLIST",
                     click: () => {
                         EditPlaylist(content);
+                        forceCloseMenu();
                     },
                 });
             }
@@ -197,6 +350,7 @@
                     text: "DELETE PLAYLIST",
                     click: () => {
                         DeletePlaylist(content.data.playlistId);
+                        forceCloseMenu();
                     },
                 });
             }
@@ -206,6 +360,7 @@
                     text: "REMOVE FROM LIBRARY",
                     click: () => {
                         SetPlaylistSave(content.data.playlistId, false);
+                        forceCloseMenu();
                     },
                 });
             } else {
@@ -213,6 +368,7 @@
                     text: "ADD TO LIBRARY",
                     click: () => {
                         SetPlaylistSave(content.data.playlistId, false);
+                        forceCloseMenu();
                     },
                 });
             }
@@ -221,7 +377,10 @@
         if (content?.data?.shareLink) {
             buttons.push({
                 text: "COPY LINK",
-                click: () => {},
+                click: () => {
+                    navigator.clipboard.writeText(content.data.shareLink);
+                    forceCloseMenu();
+                },
             });
         }
 
@@ -230,6 +389,17 @@
                 text: "ADD TO PLAYLIST",
                 click: () => {
                     AddToPlaylist(ids);
+                    forceCloseMenu();
+                },
+            });
+        }
+
+        if (content?.items != undefined) {
+            buttons.push({
+                text: "ADD TO QUEUE",
+                click: () => {
+                    AddToQueue(content.items);
+                    forceCloseMenu();
                 },
             });
         }
@@ -243,6 +413,7 @@
                 text: "UNSUBSCRIBE",
                 click: () => {
                     SetArtistSubscribe(data.browseId, false);
+                    forceCloseMenu();
                 },
             });
         } else {
@@ -250,6 +421,7 @@
                 text: "SUBSCRIBE",
                 click: () => {
                     SetArtistSubscribe(data.browseId, true);
+                    forceCloseMenu();
                 },
             });
         }
@@ -263,6 +435,7 @@
                 text: "GO TO ALBUM",
                 click: () => {
                     NavigateToAlbum(data.album.albumId);
+                    forceCloseMenu();
                 },
             });
         }
@@ -272,6 +445,41 @@
                 text: "GO TO ARTIST",
                 click: () => {
                     NavigateToArtist(data?.artists[0]?.artistId);
+                    forceCloseMenu();
+                },
+            });
+        }
+
+        if (data?.setVideoId != undefined && data?.playlistId != undefined) {
+            buttons.push({
+                text: "REMOVE FROM PLAYLIST",
+                click: () => {
+                    RemoveFromPlaylist(
+                        data?.id,
+                        data?.setVideoId,
+                        data?.playlistId,
+                    );
+                    forceCloseMenu();
+                },
+            });
+        }
+
+        if (data?.id != undefined) {
+            buttons.push({
+                text: "ADD TO PLAYLIST",
+                click: () => {
+                    AddToPlaylist([data?.id]);
+                    forceCloseMenu();
+                },
+            });
+        }
+
+        if (data?.id != undefined) {
+            buttons.push({
+                text: "ADD TO QUEUE",
+                click: () => {
+                    AddToQueue([data]);
+                    forceCloseMenu();
                 },
             });
         }
@@ -280,6 +488,7 @@
 
 {#if visible}
     <div
+        class="main-cm"
         style="left: {X + 5}px; top: {Y + 5}px;"
         transition:fly={{ y: -15 }}
         bind:this={contextMenu}
@@ -306,6 +515,10 @@
 {/if}
 
 <style>
+    .main-cm {
+        z-index: 99;
+    }
+
     .CM-content {
         display: flex;
         flex-direction: column;

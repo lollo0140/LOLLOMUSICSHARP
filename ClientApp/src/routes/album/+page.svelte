@@ -108,7 +108,7 @@
                     <img src="./assets/buttons/download.png" alt="" />
                 </button>
 
-                <button>
+                <button class="page-menu" onclick={(e) => {openPageContextMenu(e, content, "playlist")}} >
                     <img src="./assets/buttons/more_options.png" alt="" />
                 </button>
             </div>

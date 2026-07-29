@@ -348,6 +348,11 @@ class IpcMain
             return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
         });
 
+        registerHandle(win, "removeFromplaylist", async (string id, string setVideoId, string playlistId) =>
+        {
+            YTClient.InteractionsEndpoint.RemoveVideoFromPlaylist(id, setVideoId, playlistId);
+        });
+
         registerHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
         {
             YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);

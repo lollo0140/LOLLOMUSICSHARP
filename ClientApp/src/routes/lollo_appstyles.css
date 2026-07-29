@@ -6,6 +6,8 @@
 * {
     font-family: Lexend;
     user-select: none;
+
+    outline: none;
 }
 
 .lollo-appstyle-DivContainer {

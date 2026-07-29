@@ -6,7 +6,6 @@
     import SongListRenderer from "../svelte_components/reusable/SongListRenderer.svelte";
 
     let { content } = $props();
-    console.log(content);
 
     let horizontalScroller = $state();
 </script>
@@ -61,7 +60,7 @@
         </div>
     {:else if content.displayType == "itemList"}
         <div class="item-renderer-list">
-            <SongListRenderer content={content.items} />
+            <SongListRenderer content={content.items} from={"home: " + content?.title}/>
         </div>
     {/if}
 </div>

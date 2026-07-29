@@ -37,7 +37,7 @@
 
 {#if nextSong != undefined}
     <button
-        onclick={goto("/queue")}
+        onclick={() => {goto("/queue")}}
         class="up-next lollo-appstyle-DivContainer"
     >
         <p class="sec-title">UP NEXT</p>

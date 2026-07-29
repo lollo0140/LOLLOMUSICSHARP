@@ -34,6 +34,7 @@
     // @ts-ignore
     import { fade, fly } from "svelte/transition";
     import { goto } from "$app/navigation";
+    import { SetCurrentPlaylist } from "../audioPlayer/playerStore";
 
     let activeFilter = $state("all");
 
@@ -164,7 +165,7 @@
                         <div class="best-result-content">
                             {#if content.bestResult.content && content.bestResult.content.length > 1}
                                 {#each content.bestResult.content as item}
-                                    <ResultListElement content={item} />
+                                    <ResultListElement content={item} from={`results for: ${searchKey}`} onclick={() => {SetCurrentPlaylist([item], 0, `top results: ${searchKey}`)}}/>
                                 {/each}
                             {/if}
                         </div>
@@ -172,13 +173,13 @@
 
                     <div>
                         {#each content.sections as section}
-                            <ResultElement content={section} />
+                            <ResultElement content={section} from={`results for: ${searchKey}`}/>
                         {/each}
                     </div>
                 </div>
             {:else if activeFilter === "traks" || activeFilter === "videos"}
                 <p class="section-title">{activeFilter}</p>
-                <SongListRenderer content={content.results} />
+                <SongListRenderer content={content.results} from={`results for: ${searchKey}`}/>
             {:else}
                 <p class="section-title">{activeFilter}</p>
 

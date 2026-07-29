@@ -127,3 +127,20 @@ export function AddToQueue(video) {
         return [...currentVideos, ...itemsToAdd];
     });
 }
+
+export function RemoveFromQueue(id) {
+
+    const removeIndex = get(queue).indexOf(x => x.id === id) ?? undefined;
+
+    if (removeIndex === undefined) {
+        return;
+    }
+
+    queue.update(songs => {
+
+        songs.splice(removeIndex, 1)
+        return songs;
+
+    });
+
+}

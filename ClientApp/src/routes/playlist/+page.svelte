@@ -9,6 +9,7 @@
     import PageHeader from "../../svelte_components/reusable/PageHeader.svelte";
     import { SetPlaylistSave } from "../../scripts/savedElements";
     import { GetPlaylistPage } from "../../scripts/browser";
+    import { openPageContextMenu } from "../ContextMenu.svelte";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
@@ -124,14 +125,14 @@
                     <img src="./assets/buttons/download.png" alt="" />
                 </button>
 
-                <button>
+                <button class="page-menu" onclick={(e) => {openPageContextMenu(e, content, "playlist")}}>
                     <img src="./assets/buttons/more_options.png" alt="" />
                 </button>
             </div>
         </PageHeader>
 
         <div class="PL-elements">
-            <SongListRenderer content={content.items} from={(content.data.title ?? "").toUpperCase()}/>
+            <SongListRenderer content={content.items} playlistId={quary} from={(content.data.title ?? "").toUpperCase()}/>
         </div>
     </main>
 {:else}

@@ -3,7 +3,12 @@
     import SongButton from "./SongButton.svelte";
     import { SetCurrentPlaylist } from "../../routes/audioPlayer/playerStore";
 
-    let { content, renderPhoto = true, from = "" } = $props();
+    let {
+        content,
+        renderPhoto = true,
+        from = "",
+        playlistId = undefined,
+    } = $props();
 
     onMount(() => {
         console.log(renderPhoto);
@@ -19,6 +24,7 @@
             content={item}
             {index}
             {renderPhoto}
+            fatherId = {playlistId}
         />
     {/each}
 </div>

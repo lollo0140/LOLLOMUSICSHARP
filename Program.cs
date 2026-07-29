@@ -50,7 +50,7 @@ class Program
             Electron.App.CommandLine.AppendSwitch("disable-gpu");
             Electron.App.CommandLine.AppendSwitch("disable-gpu-compositing");
 
-            CreateElectronWindow();
+            CreateElectronWindow(app);
         }
 
 
@@ -59,7 +59,7 @@ class Program
     }
 
 
-    static async void CreateElectronWindow()
+    static async void CreateElectronWindow(WebApplication app)
     {
 
 
@@ -80,7 +80,7 @@ class Program
             Resizable = false,
             Movable = false,
             SkipTaskbar = true,
-            AlwaysOnTop = false,
+            AlwaysOnTop = true,
             WebPreferences = new WebPreferences
             {
                 ContextIsolation = true,
@@ -94,13 +94,17 @@ class Program
         var Window = await Electron.WindowManager.CreateWindowAsync(options);
 
 
-
-
-
         IpcMain.RegisterEvents(Window);
         IpcMain.RegisterHandlers(Window);
 
-        Window.LoadURL("http://localhost:5173/");
+        if (app.Environment.IsDevelopment())
+        {
+            Window.LoadURL("http://localhost:5173/");
+        }
+        else
+        {
+            Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
+        }
 
         Window.OnReadyToShow += () => Window.Show();
 
