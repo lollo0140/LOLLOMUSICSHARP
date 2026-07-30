@@ -1,6 +1,10 @@
 <script module>
     import { fade } from "svelte/transition";
-    import { CreateNewPlaylist, EditLibraryPlaylist } from "../scripts/savedElements";
+    import {
+        CreateNewPlaylist,
+        EditLibraryPlaylist,
+    } from "../scripts/savedElements";
+    import { ReloadLibrary } from "./library/+page.svelte";
 
     let sendButtonText = $state("");
     let onSendButton = $state(() => {});
@@ -18,13 +22,15 @@
     let desc = $state();
     let PLid = $state();
 
-
     export async function EditPlaylist(data) {
         menuVisible = true;
 
         sendButtonText = "SAVE";
         onSendButton = () => {
             EditLibraryPlaylist(PLid, name, desc, privacySelector);
+            if (window.location.pathname === "/library") {
+                ReloadLibrary();
+            }
             menuVisible = false;
         };
 
@@ -48,9 +54,11 @@
         onSendButton = () => {
             CreateNewPlaylist(name, desc, privacySelector);
             menuVisible = false;
+            if (window.location.pathname === "/library") {
+                ReloadLibrary();
+            }
         };
     }
-
 </script>
 
 {#if menuVisible}

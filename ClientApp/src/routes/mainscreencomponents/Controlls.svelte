@@ -32,7 +32,11 @@
         playState,
         repeatValue,
         shuffleValue,
+        queue,
+        index,
     } from "../audioPlayer/playerStore.js";
+
+    let currentSong = $derived($queue[$index]);
 
     let volumeValue = $state();
     let savedVolumeValue = 0;
@@ -49,6 +53,35 @@
             return "/assets/controlls/volume_medium.png";
         } else if (volumeValue <= 100) {
             return "/assets/controlls/volume_max.png";
+        }
+    });
+
+    $effect(() => {
+        if ("mediaSession" in navigator) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: currentSong.title,
+                artist: currentSong.artists.map((x) => x.artistName).join(", "),
+                album: "The Ultimate Collection (Remastered)",
+                artwork: [
+                    {
+                        src: currentSong.thumbnails[0],
+                        sizes: "96x96",
+                        type: "image/png",
+                    },
+                    {
+                        src: currentSong.thumbnails[1],
+                        sizes: "128x128",
+                        type: "image/png",
+                    },
+                ],
+            });
+
+            navigator.mediaSession.setActionHandler("previoustrack", () => {
+                PreviousTrack();
+            });
+            navigator.mediaSession.setActionHandler("nexttrack", () => {
+                NextTrack();
+            });
         }
     });
 </script>

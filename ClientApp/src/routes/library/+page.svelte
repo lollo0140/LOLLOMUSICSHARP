@@ -1,4 +1,4 @@
-<script>
+<script module>
     import SquareButton from "../../svelte_components/reusable/SquareButton.svelte";
     import { SetPageButtons } from "../mainscreencomponents/UpperBar.svelte";
     import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
@@ -7,7 +7,6 @@
     import { fly } from "svelte/transition";
     import { reloadSidebarList } from "../mainscreencomponents/navigation_bar.svelte";
     import { CreatePlaylist } from "../EditPLaylistMenu.svelte";
-    import { json } from "@sveltejs/kit";
 
     let content = $state(undefined);
 
@@ -150,6 +149,50 @@
         content = lib.Result.items;
     }
 
+    export async function ReloadLibrary() {
+        setTimeout(async () => {
+            content = undefined;
+            const lib = JSON.parse(
+                await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
+            );
+
+            filter = "all";
+
+            const customButtons = [
+                {
+                    text: "Playlists",
+                    onclick: () => {
+                        OnlyPlaylists();
+                    },
+                },
+                {
+                    text: "Albums",
+                    onclick: () => {
+                        OnlyAlbums();
+                    },
+                },
+                {
+                    text: "Artists",
+                    onclick: () => {
+                        OnlyArtists();
+                    },
+                },
+                {
+                    text: "Subscribed",
+                    onclick: () => {
+                        OnlySubscribed();
+                    },
+                },
+            ];
+
+            SetPageButtons(customButtons);
+
+            content = lib.Result.items;
+        }, 1000);
+    }
+</script>
+
+<script>
     export const snapshot = {
         capture: () => {
             return content;

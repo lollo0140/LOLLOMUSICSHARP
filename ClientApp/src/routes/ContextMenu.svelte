@@ -1,4 +1,5 @@
 <script module>
+    import { page } from "$app/stores";
     import { fly } from "svelte/transition";
     import {
         GetAlbumPage,
@@ -20,6 +21,7 @@
     import { AddToPlaylist } from "./AddToPlaylistMenu.svelte";
     import { EditPlaylist } from "./EditPLaylistMenu.svelte";
     import { AddToQueue } from "./audioPlayer/playerStore";
+    import { ReloadLibrary } from "./library/+page.svelte";
 
     let DATA = $state();
 
@@ -274,6 +276,9 @@
                 text: "REMOVE FROM LIBRARY",
                 click: () => {
                     SetPlaylistSave(content.data.saveParam, false);
+                    if (window.location.pathname === "/library") {
+                        ReloadLibrary();
+                    }
                     forceCloseMenu();
                 },
             });
@@ -282,6 +287,9 @@
                 text: "ADD TO LIBRARY",
                 click: () => {
                     SetPlaylistSave(content.data.saveParam, true);
+                    if (window.location.pathname === "/library") {
+                        ReloadLibrary();
+                    }
                     forceCloseMenu();
                 },
             });
@@ -352,6 +360,9 @@
                     text: "DELETE PLAYLIST",
                     click: () => {
                         DeletePlaylist(content.data.playlistId);
+                        if (window.location.pathname === "/library") {
+                            ReloadLibrary();
+                        }
                         forceCloseMenu();
                     },
                 });
@@ -362,6 +373,9 @@
                     text: "REMOVE FROM LIBRARY",
                     click: () => {
                         SetPlaylistSave(content.data.playlistId, false);
+                        if (window.location.pathname === "/library") {
+                            ReloadLibrary();
+                        }
                         forceCloseMenu();
                     },
                 });
@@ -370,6 +384,9 @@
                     text: "ADD TO LIBRARY",
                     click: () => {
                         SetPlaylistSave(content.data.playlistId, false);
+                        if (window.location.pathname === "/library") {
+                            ReloadLibrary();
+                        }
                         forceCloseMenu();
                     },
                 });
@@ -415,6 +432,9 @@
                 text: "UNSUBSCRIBE",
                 click: () => {
                     SetArtistSubscribe(data.browseId, false);
+                    if (window.location.pathname === "/library") {
+                        ReloadLibrary();
+                    }
                     forceCloseMenu();
                 },
             });

@@ -110,7 +110,8 @@ class Program
         IpcMain.RegisterHandlers(Window);
 
 
-        Window.LoadURL("http://localhost:5173/");
+            Window.LoadURL("http://localhost:5173/");
+            //Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
 
 
         Window.OnMinimize += async () =>
