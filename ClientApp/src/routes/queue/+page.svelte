@@ -23,7 +23,6 @@
             <div class="current">
                 <p class="current-song-label">CURRENT SONG</p>
                 <SongButton
-                    renderPhoto={false}
                     onclick={() => {
                         $index = i;
                     }}

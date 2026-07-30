@@ -15,6 +15,7 @@ class IpcMain
 
     public static YTMusicSharp YTClient;
 
+    public static string libraryDataPath = Path.Combine(Directory.GetCurrentDirectory(), "YTlibrary.json");
 
     public class AudioHandler
     {
@@ -31,7 +32,7 @@ class IpcMain
 
 
 
-    public static void registerHandle(BrowserWindow win, string eventName, Delegate callback)
+    public static void RegisterHandle(BrowserWindow win, string eventName, Delegate callback)
     {
 
         Electron.IpcMain.On(eventName, async (data) =>
@@ -88,7 +89,7 @@ class IpcMain
 
 
 
-    public static async Task openLogWin(BrowserWindow win)
+    public static async Task OpenLogWin(BrowserWindow win)
     {
         var tcs = new TaskCompletionSource<bool>();
 
@@ -184,12 +185,12 @@ class IpcMain
 
 
         //log window
-        registerHandle(win, "openLog", async () =>
+        RegisterHandle(win, "openLog", async () =>
         {
-            await openLogWin(win);
+            await OpenLogWin(win);
         });
 
-        registerHandle(win, "loginYT", () =>
+        RegisterHandle(win, "loginYT", () =>
         {
             string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             string jsonPath = Path.Join(baseDirectory, "ytheaders.json");
@@ -211,7 +212,7 @@ class IpcMain
 
         });
 
-        registerHandle(win, "getLogInfo", async () =>
+        RegisterHandle(win, "getLogInfo", async () =>
         {
 
             JsonObject loggedUser = await YTClient.AccountEndpoint.GetLoggedUser();
@@ -220,7 +221,7 @@ class IpcMain
 
         });
 
-        registerHandle(win, "LogOff", async () =>
+        RegisterHandle(win, "LogOff", async () =>
         {
             File.Delete("./ytheaders.json");
         });
@@ -231,7 +232,7 @@ class IpcMain
         RegisterHomeHandlers(win);
         RegisterSearchHandlers(win);
 
-        registerHandle(win, "GetFromDB", (string id, string filter) =>
+        RegisterHandle(win, "GetFromDB", (string id, string filter) =>
         {
 
             DB_filter F;
@@ -270,19 +271,19 @@ class IpcMain
             return JsonSerializer.Serialize(YTClient.GetFromLocalDB(F, id));
         });
 
-        registerHandle(win, "subscribeArtist", async (string id, bool state) =>
+        RegisterHandle(win, "subscribeArtist", async (string id, bool state) =>
         {
-            YTClient.InteractionsEndpoint.SetArtistSubscription(id, state);
+            await YTClient.InteractionsEndpoint.SetArtistSubscription(id, state);
         });
 
-        registerHandle(win, "setSaveAlbum", (string browseId, bool state) =>
+        RegisterHandle(win, "setSaveAlbum", (string browseId, bool state) =>
         {
 
             YTClient.InteractionsEndpoint.SetPlaylistSave(browseId, state);
 
         });
 
-        registerHandle(win, "setVideoLike", async (string id, string likeStatus) =>
+        RegisterHandle(win, "setVideoLike", async (string id, string likeStatus) =>
         {
 
             LikeStatus likeStatusFinal = LikeStatus.NEUTRAL;
@@ -300,11 +301,11 @@ class IpcMain
                     break;
             }
 
-            YTClient.InteractionsEndpoint.SetSongLikeStatus(id, likeStatusFinal);
+            await YTClient.InteractionsEndpoint.SetSongLikeStatus(id, likeStatusFinal);
 
         });
 
-        registerHandle(win, "getSearchSugg", async (string key) =>
+        RegisterHandle(win, "getSearchSugg", async (string key) =>
         {
 
             JsonArray sugesstions = await YTClient.SearchEndpoint.GetSearchSugg(key);
@@ -313,7 +314,7 @@ class IpcMain
 
         });
 
-        registerHandle(win, "getPageData", async (string type, string browseId) =>
+        RegisterHandle(win, "getPageData", async (string type, string browseId) =>
         {
 
             string Return = "";
@@ -343,23 +344,23 @@ class IpcMain
 
 
         //add to playlist
-        registerHandle(win, "addToPlaylistMenu", async () =>
+        RegisterHandle(win, "addToPlaylistMenu", async () =>
         {
             return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
         });
 
-        registerHandle(win, "removeFromplaylist", async (string id, string setVideoId, string playlistId) =>
+        RegisterHandle(win, "removeFromplaylist", async (string id, string setVideoId, string playlistId) =>
         {
-            YTClient.InteractionsEndpoint.RemoveVideoFromPlaylist(id, setVideoId, playlistId);
+            await YTClient.InteractionsEndpoint.RemoveVideoFromPlaylist(id, setVideoId, playlistId);
         });
 
-        registerHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
+        RegisterHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
         {
-            YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
+            await YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
         });
 
         //PLAYLISTS -------------------------------
-        registerHandle(win, "EditPlaylistInfo", async (string playlistId, string name, string desc, string privacy) =>
+        RegisterHandle(win, "EditPlaylistInfo", async (string playlistId, string name, string desc, string privacy) =>
         {
 
             PrivacyStatus PS = PrivacyStatus.UNLISTED;
@@ -379,11 +380,11 @@ class IpcMain
                     break;
             }
 
-            YTClient.InteractionsEndpoint.EditPLaylist(playlistId, pTitle: name, pDescriprtion: desc, privacyStatus: PS);
+            await YTClient.InteractionsEndpoint.EditPLaylist(playlistId, pTitle: name, pDescriprtion: desc, privacyStatus: PS);
 
         });
 
-        registerHandle(win, "CreatePlaylistInfo", async (string name, string desc, string privacy) =>
+        RegisterHandle(win, "CreatePlaylistInfo", async (string name, string desc, string privacy) =>
         {
 
             PrivacyStatus PS = PrivacyStatus.UNLISTED;
@@ -407,7 +408,7 @@ class IpcMain
 
         });
 
-        registerHandle(win, "DeletePlaylist", async (string playlistId) =>
+        RegisterHandle(win, "DeletePlaylist", async (string playlistId) =>
         {
             await YTClient.InteractionsEndpoint.DeletePLaylist(playlistId);
         });
@@ -425,7 +426,10 @@ class IpcMain
             Electron.IpcMain.Send(win, "showWin");
         });
 
-
+        win.OnClose += ()  =>
+        {
+            YTClient.ReleaseCached();
+        };
 
 
     }
@@ -436,7 +440,7 @@ class IpcMain
 
     public static void RegisterSearchHandlers(BrowserWindow win)
     {
-        registerHandle(win, "search", async (string searckKey, string type) =>
+        RegisterHandle(win, "search", async (string searckKey, string type) =>
         {
             ContentType contentType;
 
@@ -482,7 +486,7 @@ class IpcMain
     }
     public static void RegisterHomeHandlers(BrowserWindow win)
     {
-        registerHandle(win, "getHome", async () =>
+        RegisterHandle(win, "getHome", async () =>
         {
             return JsonSerializer.Serialize(YTClient.BrowseEndpoint.FetchHomeSections());
         });
@@ -490,27 +494,42 @@ class IpcMain
     public static void RegisterLybraryHandlers(BrowserWindow win)
     {
         //LIBRARY PAGE
-        registerHandle(win, "getLibraryPage", async () =>
+        RegisterHandle(win, "getLibraryPage", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryLandingPage());
+
+            string serializedData = JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryLandingPage());
+
+            File.WriteAllText(libraryDataPath, serializedData);
+
+            return serializedData;
         });
 
-        registerHandle(win, "getLibraryPlaylists", async () =>
+        RegisterHandle(win, "getSavedYTLibrary", async () =>
+        {
+            if (File.Exists(libraryDataPath))
+            {
+                return File.ReadAllText(libraryDataPath);
+            }
+
+            return "[]";
+        });
+
+        RegisterHandle(win, "getLibraryPlaylists", async () =>
         {
             return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Playlists));
         });
 
-        registerHandle(win, "getLibraryAlbums", async () =>
+        RegisterHandle(win, "getLibraryAlbums", async () =>
         {
             return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Albums));
         });
 
-        registerHandle(win, "getLibraryArtists", async () =>
+        RegisterHandle(win, "getLibraryArtists", async () =>
         {
             return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Artists));
         });
 
-        registerHandle(win, "getLibrarySubscribed", async () =>
+        RegisterHandle(win, "getLibrarySubscribed", async () =>
         {
             return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Subscribed));
         });

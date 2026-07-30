@@ -5,11 +5,16 @@
     let { content, from = "" } = $props();
 </script>
 
-<p class="section-title">{content.sectionTitle}</p>
+<p class="section-title">{content.sectionTitle.toUpperCase()}</p>
 
 {#each content.content as item}
     {#if item.type !== "podcast" && item.type !== "channel" && item.type !== "episode"}
-        <ResultListElement content={item} onclick={() => SetCurrentPlaylist([item], 0, from)}/>
+        <div>
+            <ResultListElement
+                content={item}
+                onclick={() => SetCurrentPlaylist([item], 0, from)}
+            />
+        </div>
     {/if}
 {/each}
 
@@ -17,8 +22,8 @@
     .section-title {
         margin: 0px;
 
-        margin-top: 50px;
-        margin-bottom: 10px;
+        margin-top: 70px;
+        margin-bottom: 30px;
 
         color: rgba(255, 255, 255, 0.5);
         font-size: 40px;

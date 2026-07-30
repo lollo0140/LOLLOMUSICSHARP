@@ -1,0 +1,1 @@
+import{et as e,w as t,x as n}from"../chunks/CxHjRy6F.js";import"../chunks/xihTtKlq.js";import"../chunks/D2m3UxeA.js";function r(r){e(),n(r,t(`LOCAL FILES`))}export{r as component};

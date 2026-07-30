@@ -20,6 +20,7 @@ class FlyoutWindow
         win.SetPosition(left, 0);
         win.SetSize(300, 54);
         win.SetResizable(false);
+        win.SetMovable(true);
 
     }
 
@@ -34,6 +35,7 @@ class FlyoutWindow
         win.SetResizable(true);
         win.SetSize(width, height);
         win.SetResizable(false);
+        win.SetMovable(false);
 
     }
 

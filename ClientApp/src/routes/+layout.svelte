@@ -92,6 +92,15 @@
     onMount(async () => {
         //SPAWN EVENT
 
+        onMount(() => {
+            if (
+                window.location.pathname !== "/" &&
+                window.location.pathname !== ""
+            ) {
+                window.location.replace("/");
+            }
+        });
+
         // @ts-ignore
         ipcRenderer = window.electron.ipcRenderer;
 
@@ -197,7 +206,6 @@
         background: transparent;
     }
 
-    
     .controllsWrapper {
         position: absolute;
 
@@ -207,13 +215,12 @@
 
         border-radius: 45px;
 
-        top: calc(100% - 178px );
+        top: calc(100% - 178px);
         left: 300px;
         right: 300px;
 
         background: rgba(0, 0, 0, 0.95);
         border: solid rgba(255, 255, 255, 0.3) 1px;
-
     }
 
     main {

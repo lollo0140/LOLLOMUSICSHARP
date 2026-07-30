@@ -10,6 +10,7 @@
     import SongListRenderer from "../../svelte_components/reusable/SongListRenderer.svelte";
     import { SetPlaylistSave } from "../../scripts/savedElements";
     import { GetAlbumPage } from "../../scripts/browser";
+    import { openPageContextMenu } from "../ContextMenu.svelte";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);

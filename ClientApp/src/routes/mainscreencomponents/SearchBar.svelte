@@ -5,7 +5,7 @@
 
     let searchKey = $state();
 
-    let selectionIndex = $state(0);
+    let selectionIndex = $state(-1);
     let selecting = $state(false);
 
     let sugg = $state([]);
@@ -68,6 +68,7 @@
             if (event.key === "Enter") {
                 if (selecting) {
                     NavigateTo("/search");
+
                     SPageSearch(
                         sugg[selectionIndex].query +
                             sugg[selectionIndex].completition,
@@ -171,10 +172,13 @@
         backdrop-filter: blur(10px) brightness(0.6);
 
         display: flex;
+        justify-content: end;
     }
+
 
     input {
         height: 29px;
+        width: calc(100% - 40px);
 
         position: relative;
 
@@ -206,8 +210,6 @@
 
     button {
         position: relative;
-
-        left: 20px;
 
         width: 40px;
         height: 40px;

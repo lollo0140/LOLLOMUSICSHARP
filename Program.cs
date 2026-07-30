@@ -45,10 +45,22 @@ class Program
 
         app.MapControllers();
 
+
+
         if (HybridSupport.IsElectronActive)
         {
             Electron.App.CommandLine.AppendSwitch("disable-gpu");
             Electron.App.CommandLine.AppendSwitch("disable-gpu-compositing");
+
+            if (!app.Environment.IsDevelopment())
+            {
+                Electron.App.CommandLine.AppendSwitch("js-flags", "--max-old-space-size=128");
+                Electron.App.CommandLine.AppendSwitch("disable-renderer-backgrounding");
+                Electron.App.CommandLine.AppendSwitch("renderer-process-limit", "1");
+                Electron.App.CommandLine.AppendSwitch("disk-cache-size", "20971520");
+                Electron.App.CommandLine.AppendSwitch("disable-extensions");
+            }
+
 
             CreateElectronWindow(app);
         }
@@ -78,7 +90,7 @@ class Program
             Show = false,
             Transparent = true,
             Resizable = false,
-            Movable = false,
+            Movable = true,
             SkipTaskbar = true,
             AlwaysOnTop = true,
             WebPreferences = new WebPreferences
@@ -97,14 +109,15 @@ class Program
         IpcMain.RegisterEvents(Window);
         IpcMain.RegisterHandlers(Window);
 
-        if (app.Environment.IsDevelopment())
+
+        Window.LoadURL("http://localhost:5173/");
+
+
+        Window.OnMinimize += async () =>
         {
-            Window.LoadURL("http://localhost:5173/");
-        }
-        else
-        {
-            Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
-        }
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        };
 
         Window.OnReadyToShow += () => Window.Show();
 

@@ -3,9 +3,7 @@
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import { onMount } from "svelte";
     import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
-
-
-
+    import { openContextMenu } from "../ContextMenu.svelte";
 
     let Liked = $derived.by(() => {
         if (content === undefined) {
@@ -63,7 +61,18 @@
     });
 </script>
 
-<div class="button">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div
+    class="button"
+    oncontextmenu={(e) => {
+        e.preventDefault()
+
+        console.log(content);
+        openContextMenu(e, content, true);
+
+    }}
+
+>
     <button class="song-button" {onclick}> . </button>
 
     <div class="button-content" style="pointer-events: none;">
@@ -329,7 +338,6 @@
         margin: 0px;
     }
 
-
     .subtext {
         display: flex;
 
@@ -364,5 +372,4 @@
     .videoImg {
         width: 72px;
     }
-
 </style>

@@ -41,7 +41,11 @@
                         {current?.artists?.[0]?.artistName ?? ""}
                     </p>
 
-                    <p class="track-album"> { "• " + current?.album?.titleName ?? undefined}</p>
+                    {#if current?.album?.titleName}
+                        <p class="track-album">
+                            {"• " + current?.album?.titleName}
+                        </p>
+                    {/if}
                 </div>
             </div>
 
@@ -92,6 +96,8 @@
         <p class="def-text">NOTHING IN QUEUE</p>
     {/if}
 
+    <div class="drag-region"></div>
+
     <button
         class="open-button"
         onclick={() => openCommand()}
@@ -102,13 +108,18 @@
 </div>
 
 <style>
-    .def-text {
-        color: white;
-        font-weight: 900;
-        margin-left: 15px;
+    .drag-region {
+        position: absolute;
+
+        right: 50px;
+
+        background: transparent;
+        width: 70px;
+        height: 55px;
+
+        app-region: drag;
     }
 
-    /* --- CONTENITORE PRINCIPALE --- */
     .mini-player {
         position: relative;
         display: flex;
@@ -117,9 +128,16 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        border-radius: 20px;
+        border-radius: 34px;
         overflow: hidden !important;
-        border: 100px;
+    }
+
+    .def-text {
+        color: white;
+        font-weight: 900;
+        margin-left: 15px;
+        display: flex;
+        align-items: center;
     }
 
     /* --- SFONDO BLUR --- */
@@ -131,9 +149,8 @@
         height: 100%;
         z-index: 0;
         overflow: hidden;
-        pointer-events: none;
-
-        border-radius: 100px;
+        pointer-events: none; /* Evita che intercepti i click o il drag */
+        border-radius: 20px;
     }
 
     .bg-img {
@@ -145,13 +162,10 @@
         transform: scale(1.2);
     }
 
-    /* --- CONTENUTI E PULSANTI (Livello superiore) --- */
     .button-container {
         position: relative;
         z-index: 1;
-
         margin-left: 5px;
-
         width: 100%;
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
@@ -186,13 +200,16 @@
     }
 
     .track-album {
-        margin: 0px;
+        margin: 0;
         margin-left: 5px;
         font-weight: 700;
-
         opacity: 0.5;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
+    /* --- PULSANTI E CONTROLLI (NO-DRAG) --- */
     .mainButtons {
         height: 55px;
         width: 143px;
@@ -202,7 +219,10 @@
         justify-content: center;
     }
 
-    .mainButtons button {
+    /* Disabilita il drag su TUTTI i bottoni per permettere i click */
+    .mainButtons button,
+    .open-button {
+        -webkit-app-region: no-drag;
         background: none;
         border: none;
         opacity: 0.5;
@@ -210,32 +230,23 @@
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
     }
 
-    .mainButtons button:hover {
+    .mainButtons button:hover,
+    .open-button:hover {
         transform: scale(1.1);
         opacity: 1;
     }
 
     .open-button {
-        right: 0px;
-
         position: absolute;
+        right: 0;
+        top: 0;
         z-index: 1;
         margin: 3px;
         height: calc(100% - 6px);
         width: 45px;
         border-radius: 40px;
-        background: none;
-        border: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        opacity: 0.5;
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    }
-
-    .open-button:hover {
-        transform: scale(1.1);
-        opacity: 1;
     }
 </style>

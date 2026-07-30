@@ -7,6 +7,7 @@
     import { fly } from "svelte/transition";
     import { reloadSidebarList } from "../mainscreencomponents/navigation_bar.svelte";
     import { CreatePlaylist } from "../EditPLaylistMenu.svelte";
+    import { json } from "@sveltejs/kit";
 
     let content = $state(undefined);
 
@@ -138,16 +139,21 @@
         SetPageButtons(customButtons);
 
         content = JSON.parse(
+            await window.electron.ipcRenderer.lolloInvoke("getSavedYTLibrary"),
+        );
+
+        console.log("saved content: " + content);
+
+        const lib = JSON.parse(
             await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
         );
-        content = content.Result.items;
+        content = lib.Result.items;
     }
 
     export const snapshot = {
         capture: () => {
             return content;
         },
-        // 2. Ripristina lo stato quando l'utente torna indietro
         restore: (saved) => {
             content = saved;
         },

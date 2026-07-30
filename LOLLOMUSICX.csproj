@@ -3,6 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net10.0</TargetFramework>
         <OutputType>Exe</OutputType>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <GCLatencyLevel>Interactive</GCLatencyLevel>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

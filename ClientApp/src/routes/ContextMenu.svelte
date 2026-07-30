@@ -44,6 +44,8 @@
     let title = $derived.by(() => {
         if (DATA?.title) {
             return DATA.title.toUpperCase();
+        } else if (DATA?.itemTitle) {
+            return DATA?.itemTitle.toUpperCase();
         } else {
             return "";
         }
@@ -430,7 +432,7 @@
     async function SetUpVideoButtons(data) {
         console.log(data);
 
-        if (data.album.albumId != undefined) {
+        if (data?.album?.albumId != undefined) {
             buttons.push({
                 text: "GO TO ALBUM",
                 click: () => {

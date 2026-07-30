@@ -83,7 +83,7 @@
 
 <main>
     <p class="page-title">
-        {#if content != undefined}{`Results for ${searchKey}`}{:else}Search{/if}
+        {#if content != undefined}{`Results for ${searchKey}`.toUpperCase()}{:else}SEARCH{/if}
     </p>
 
     {#if content != undefined}
@@ -93,43 +93,43 @@
                     onclick={() => {
                         SearchFilter("all");
                     }}
-                    class="filter-button">All results</button
+                    class="filter-button">ALL RESULTS</button
                 >
                 <button
                     onclick={() => {
                         SearchFilter("traks");
                     }}
-                    class="filter-button">Songs</button
+                    class="filter-button">TRACKS</button
                 >
                 <button
                     onclick={() => {
                         SearchFilter("videos");
                     }}
-                    class="filter-button">Videos</button
+                    class="filter-button">VIDEOS</button
                 >
                 <button
                     onclick={() => {
                         SearchFilter("albums");
                     }}
-                    class="filter-button">Albums</button
+                    class="filter-button">ALBUMS</button
                 >
                 <button
                     onclick={() => {
                         SearchFilter("artists");
                     }}
-                    class="filter-button">Artists</button
+                    class="filter-button">ARTISTS</button
                 >
                 <button
                     onclick={() => {
                         SearchFilter("playlists");
                     }}
-                    class="filter-button">Playlists</button
+                    class="filter-button">PLAYLISTS</button
                 >
             </div>
 
             {#if activeFilter === "all"}
                 <div>
-                    <p class="section-title">Best Result</p>
+                    <p class="section-title">BEST RESULT</p>
 
                     <div class="best-result">
                         <button {onclick} class="best-result-button">
@@ -142,7 +142,7 @@
                             />
                             <div class="best-result-text">
                                 <p class="best-result-title">
-                                    {content.bestResult.itemTitle}
+                                    {content?.bestResult?.itemTitle?.toUpperCase()}
                                 </p>
 
                                 <div style="display: flex; ">
@@ -150,13 +150,13 @@
                                         {#each content.bestResult.artists as art}
                                             <a
                                                 href={`/artists?browseid=${art.artistId}`}
-                                                >{art.artistName}</a
+                                                >{art?.artistName.toUpperCase()}</a
                                             >
                                         {/each}
                                     {/if}
 
                                     <p class="best-result-subtitle">
-                                        {content.bestResult.type}
+                                        {content.bestResult.type.toUpperCase()}
                                     </p>
                                 </div>
                             </div>
