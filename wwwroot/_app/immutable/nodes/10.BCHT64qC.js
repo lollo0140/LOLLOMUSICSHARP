@@ -1,1 +1,0 @@
-import{r as e}from"../chunks/_sOBSaWL.js";export{e as component};

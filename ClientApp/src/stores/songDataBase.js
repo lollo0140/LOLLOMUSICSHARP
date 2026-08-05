@@ -1,9 +1,11 @@
-import { writable } from "svelte/store";
+import { get, writable } from "svelte/store";
 
 
 export let likedSongs = writable([]);
+export let downloaded = writable([]);
 
 export async function setUpLikedList() {
+
     let content = JSON.parse(
         await window.electron.ipcRenderer.lolloInvoke(
             "getPageData",
@@ -13,8 +15,16 @@ export async function setUpLikedList() {
     );
 
     setLikedSongs(content.items);
-
 }
+
+export async function setLocalSongs() {
+    let savedIds = JSON.parse(
+        await window.electron.ipcRenderer.lolloInvoke("scanDownloaded")
+    );
+
+    downloaded.set(savedIds);
+}
+
 
 export async function setLikedSongs(likedList) {
     let idList = likedList.map(Liked => Liked.id)
@@ -61,6 +71,22 @@ export async function SetVideoLike(id, like) {
         LikeSong(id);
     } else {
         SetSongNeutral(id);
+    }
+
+}
+
+
+export async function DownloadSong(id) {
+
+    console.log("downloading: " + id);
+
+
+    await window.electron.ipcRenderer.lolloInvoke("downloadSong", id)
+
+    if (get(downloaded).find(x => x === id) != undefined) {
+        downloaded.update(ids => {
+            return [...ids, id]
+        })
     }
 
 }

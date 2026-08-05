@@ -1,24 +1,27 @@
 <script>
+    import { fly } from "svelte/transition";
+    import { index, queue } from "../audioPlayer/playerStore";
     import NavigationBar from "./navigation_bar.svelte";
     import PlayerDisplay from "./player_display.svelte";
-    import LogISection from "./LogISection.svelte";
     import UpperBar from "./UpperBar.svelte";
 
+    let currentTrack = $derived($queue[$index]);
 
     let { children } = $props();
 </script>
 
 <div class="content">
     <div class="app-content">
-        <div class="app-navigator lollo-appstyle-DivContainer">
-            <LogISection/>
-
-            <nav class="lollo-appstyle-DivContainer">
+        <div style="{ currentTrack === undefined ? "right: 0px;" : ""}" class="app-navigator lollo-appstyle-DivContainer">
+            <nav
+                class="lollo-appstyle-DivContainer"
+                style="border-radius: 23px;"
+            >
                 <NavigationBar />
             </nav>
 
             <div class="upper-bar">
-                <UpperBar/>
+                <UpperBar />
             </div>
 
             <div class="content-renderer lollo-appstyle-DivContainer">
@@ -26,21 +29,16 @@
             </div>
         </div>
 
-        <div class="display lollo-appstyle-DivContainer">
-            <PlayerDisplay />
-        </div>
-
-
+        {#if currentTrack}
+            <div transition:fly={{x:200}} class="display lollo-appstyle-DivContainer">
+                <PlayerDisplay />
+            </div>
+        {/if}
     </div>
-
 </div>
 
-
-
 <style>
-
     .upper-bar {
-
         position: absolute;
 
         top: 8px;
@@ -63,7 +61,6 @@
 
         overflow: scroll;
         overflow-x: hidden;
-
     }
 
     nav {
@@ -73,7 +70,7 @@
         top: 0px;
         bottom: 0px;
 
-        width: 55px;
+        width: 50px;
 
         border-radius: 20px;
     }
@@ -84,7 +81,7 @@
         width: 306px;
 
         right: 0px;
-        top: 0px;
+        top: 55px;
         bottom: 0px;
 
         border-radius: 25px;

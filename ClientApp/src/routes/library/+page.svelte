@@ -137,16 +137,22 @@
 
         SetPageButtons(customButtons);
 
-        content = JSON.parse(
+        const saved = JSON.parse(
             await window.electron.ipcRenderer.lolloInvoke("getSavedYTLibrary"),
         );
+        content = saved.Result.items;
 
-        console.log("saved content: " + content);
+        console.log("saved content: ");
+        console.log(content);
 
-        const lib = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
-        );
-        content = lib.Result.items;
+        if (navigator.onLine) {
+            const lib = JSON.parse(
+                await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
+            );
+            content = lib.Result.items;
+            console.log("online content: ");
+            console.log(content);
+        }
     }
 
     export async function ReloadLibrary() {
@@ -221,7 +227,7 @@
         </button>
     {/if}
 
-    {#if content == undefined}
+    {#if content == undefined || content == []}
         <LoadingAnimation />
     {/if}
 

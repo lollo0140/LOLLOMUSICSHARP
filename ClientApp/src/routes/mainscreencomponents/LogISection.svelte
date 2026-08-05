@@ -1,4 +1,5 @@
 <script>
+    import { fade } from "svelte/transition";
     import { accountData, setDefault } from "../../stores/settingsStore.js";
 
     let open = $state(false);
@@ -25,7 +26,7 @@
     {#if open}
         <img src={$accountData.imgUrl} alt="" />
 
-        <div class="text">
+        <div in:fade class="text">
             <p style="font-weight: 900;">{$accountData.name}</p>
             <p style="opacity: 0.7; font-weight: 700;">
                 {$accountData.username}
@@ -64,6 +65,7 @@
         margin-top: 12px;
         margin-left: 10px;
 
+        white-space: nowrap;
 
     }
 
@@ -73,15 +75,15 @@
         position: absolute;
         z-index: 2;
 
-        right: 8px;
-        top: 8px;
+        right: 146px;
+        top: 15px;
 
-        width: auto;
-        height: 40px;
+        width: 175px;
+        height: 35px;
 
         border-radius: 30px;
 
-        backdrop-filter: blur(10px) brightness(0.6);
+        backdrop-filter: blur(10px);
 
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
@@ -95,15 +97,15 @@
         position: absolute;
         z-index: 2;
 
-        right: 10px;
-        top: 10px;
+        right: 146px;
+        top: 15px;
 
         width: auto;
         height: 70px;
 
         border-radius: 45px;
 
-        backdrop-filter: blur(10px) brightness(0.6);
+        backdrop-filter: blur(10px);
 
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
@@ -117,11 +119,16 @@
         display: flex;
         flex-direction: column;
         gap: 0px;
+
+        white-space: nowrap;
     }
 
     .text p {
         color: white;
         margin: 2px;
+
+        white-space: nowrap;
+
     }
 
     .loginDivClosed img {

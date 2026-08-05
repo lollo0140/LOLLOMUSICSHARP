@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,6 +16,7 @@ class IpcMain
 {
 
     public static YTMusicSharp YTClient;
+    public static string? downloadPath = null;
 
     public static string libraryDataPath = Path.Combine(Directory.GetCurrentDirectory(), "YTlibrary.json");
 
@@ -231,6 +234,8 @@ class IpcMain
         RegisterLybraryHandlers(win);
         RegisterHomeHandlers(win);
         RegisterSearchHandlers(win);
+        RegisterSystemHandlers(win);
+
 
         RegisterHandle(win, "GetFromDB", (string id, string filter) =>
         {
@@ -414,30 +419,137 @@ class IpcMain
         });
 
 
+        //settings
+        RegisterHandle(win, "getSettings", async () =>
+        {
+
+            string fileContent = File.ReadAllText(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json"));
+            JsonNode settings = JsonNode.Parse(fileContent);
+
+            downloadPath = settings["localData"]["downloadPath"].GetValue<string>();
+
+            return fileContent;
+
+        });
+
+
+
     }
 
-    public static async void RegisterEvents(BrowserWindow win)
+    static async Task SetWinHide(BrowserWindow win, bool value)
+    {
+        if (OperatingSystem.IsLinux())
+        {
+            if ((bool)value)
+            {
+                await win.WebContents.ExecuteJavaScriptAsync("document.body.style.opacity = '0';");
+                win.SetIgnoreMouseEvents(true);
+                win.SetSkipTaskbar(true);
+            }
+            else
+            {
+                await win.WebContents.ExecuteJavaScriptAsync("document.body.style.opacity = '1';");
+                win.SetIgnoreMouseEvents(false);
+                win.SetSkipTaskbar(false);
+            }
+        }
+        else
+        {
+            if ((bool)value)
+            {
+                win.Hide();
+            }
+            else
+            {
+                win.Show();
+            }
+        }
+
+
+    }
+
+    public static async Task RegisterEvents(BrowserWindow win)
     {
 
         string shortcut = "CommandOrControl+Shift+M";
 
+        await Electron.IpcMain.On("setHideWinValue", async (value) =>
+        {
+
+            await SetWinHide(win, (bool)value);
+
+        });
+
         Electron.GlobalShortcut.Register(shortcut, async () =>
         {
+            System.Console.WriteLine("Shortcut attivato!");
+
+            await SetWinHide(win, false);
+
             Electron.IpcMain.Send(win, "showWin");
         });
 
-        win.OnClose += ()  =>
+        win.OnClose += () =>
         {
             YTClient.ReleaseCached();
         };
-
-
     }
 
 
 
 
+    public static void RegisterSystemHandlers(BrowserWindow win)
+    {
+        RegisterHandle(win, "openDirPicker", async () =>
+        {
+            return await ElectronFunctions.OpenDirectoryPicker(win);
+        });
 
+        RegisterHandle(win, "downloadSong", async (string id) =>
+        {
+
+            System.Console.WriteLine($"saving {id} to {downloadPath}");
+
+            if (downloadPath != null)
+            {
+                await YTClient.SaveVideoPermanent(id, downloadPath);
+            }
+            else
+            {
+                await YTClient.SaveVideoPermanent(id);
+            }
+
+        });
+
+        RegisterHandle(win, "scanDownloaded", async () =>
+        {
+            string _;
+
+            if (downloadPath != null)
+            {
+                _ = downloadPath;
+            }
+            else
+            {
+                _ = YTClient.downloadPath;
+            }
+
+            JsonArray localIds = [ .. Directory.GetFiles(_)
+                .Where(file => Path.GetExtension(file).Equals(".webm", StringComparison.OrdinalIgnoreCase))
+                .Select(file => Path.GetFileNameWithoutExtension(file)) ];
+
+
+            if (localIds.Count > 0)
+            {
+                return JsonSerializer.Serialize(localIds);
+            }
+            else
+            {
+                return JsonSerializer.Serialize(new JsonArray());
+            }
+        });
+
+    }
     public static void RegisterSearchHandlers(BrowserWindow win)
     {
         RegisterHandle(win, "search", async (string searckKey, string type) =>

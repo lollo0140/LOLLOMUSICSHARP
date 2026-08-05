@@ -10,6 +10,8 @@ using System.Threading;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using YoutubeMusic;
+using System.Drawing;
 
 class Program
 {
@@ -31,6 +33,27 @@ class Program
 
         app.MapGet("/api/audio/{id}", async (string id, IpcMain.AudioHandler handler) =>
         {
+
+
+            var settingsFilePath = JsonNode.Parse(File.ReadAllText(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json")));
+
+
+            string dowPath = handler.GetYTClient().downloadPath;
+
+            string? pathFromSettings = settingsFilePath?["localData"]?["downloadPath"].GetValue<string>() ?? null;
+
+            if (pathFromSettings != null && pathFromSettings != "none")
+            {
+                string P = Path.Join(pathFromSettings, $"{id}.webm");
+
+                if (File.Exists(P))
+                {
+                    return Results.File(P, contentType: "audio/webm", enableRangeProcessing: true);
+                }
+            }
+
+
+
             string? path = await handler.GetAudioData(id);
             if (path == null) return Results.NotFound();
 
@@ -44,8 +67,6 @@ class Program
         app.UseAuthorization();
 
         app.MapControllers();
-
-
 
         if (HybridSupport.IsElectronActive)
         {
@@ -62,14 +83,82 @@ class Program
             }
 
 
+
             CreateElectronWindow(app);
         }
 
+        createSettingsFile();
 
         app.Run();
 
     }
 
+    static void CreateTray(WebApplication app, BrowserWindow window)
+    {
+#if WINDOWS
+        Electron.App.Ready += async () =>
+        {
+            // 1. Crea la finestra principale
+            var window = await Electron.WindowManager.CreateWindowAsync();
+
+            // 2. Definisci gli elementi del menu contestuale (tasto destro)
+            var menuItems = new MenuItem[]
+            {
+                new MenuItem
+                {
+                    Label = "Mostra App",
+                    Click = () => window.Show()
+                },
+                new MenuItem
+                {
+                    Label = "Nascondi",
+                    Click = () => window.Hide()
+                },
+                new MenuItem
+                {
+                    Type = MenuType.separator
+                },
+                new MenuItem
+                {
+                    Label = "Esci",
+                    Click = () => Electron.App.Quit()
+                }
+            };
+
+            // 3. Inizializza l'icona e il tooltip della Tray
+            // Nota: Il percorso dell'icona parte dalla root della directory di output del progetto
+            string iconPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Icon.png");
+
+            await Electron.Tray.Show(iconPath, menuItems);
+            await Electron.Tray.SetToolTip("La mia App .NET con Electron");
+
+        };
+
+
+#endif
+    }
+
+    static void createSettingsFile()
+    {
+        string settingsFilePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
+
+        if (!File.Exists(settingsFilePath))
+        {
+            JsonObject settings = new JsonObject
+            {
+                ["localData"] = new JsonObject
+                {
+                    ["downloadPath"] = "none"
+                }
+            };
+
+            File.WriteAllText(settingsFilePath, JsonSerializer.Serialize(settings));
+
+        }
+
+
+
+    }
 
     static async void CreateElectronWindow(WebApplication app)
     {
@@ -110,8 +199,8 @@ class Program
         IpcMain.RegisterHandlers(Window);
 
 
-            Window.LoadURL("http://localhost:5173/");
-            //Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
+        Window.LoadURL("http://localhost:5173/");
+        //Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
 
 
         Window.OnMinimize += async () =>
@@ -119,6 +208,8 @@ class Program
             GC.Collect();
             GC.WaitForPendingFinalizers();
         };
+
+        CreateTray(app, Window);
 
         Window.OnReadyToShow += () => Window.Show();
 

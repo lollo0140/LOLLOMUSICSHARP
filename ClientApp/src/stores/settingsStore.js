@@ -1,5 +1,12 @@
 import { writable } from "svelte/store";
 
+export let settings = writable({});
+
+export async function GetSettings() {
+    settings.set(
+        JSON.parse(await window.electron.ipcRenderer.lolloInvoke("getSettings"))
+    );
+}
 
 const nonLoggedData = {
     imgUrl: "",

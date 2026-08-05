@@ -131,7 +131,7 @@
         background: rgba(255, 255, 255, 0.05);
         border-radius: 20px;
 
-        backdrop-filter: blur(40px) brightness(0.6);
+        backdrop-filter: blur(40px);
 
         opacity: 1;
     }
@@ -169,7 +169,7 @@
 
         border-radius: 30px;
 
-        backdrop-filter: blur(10px) brightness(0.6);
+        backdrop-filter: blur(10px);
 
         display: flex;
         justify-content: end;

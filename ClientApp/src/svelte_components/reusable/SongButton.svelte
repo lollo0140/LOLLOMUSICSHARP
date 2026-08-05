@@ -2,10 +2,21 @@
     import { onMount } from "svelte";
     import { NavigateTo } from "../../scripts/navigationScript";
     import { GetDefPng } from "../../scripts/defPngManager";
-    import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
+    import {
+        downloaded,
+        DownloadSong,
+        likedSongs,
+        SetVideoLike,
+    } from "../../stores/songDataBase.js";
     import { openContextMenu } from "../../routes/ContextMenu.svelte";
 
-    let { onclick, content, index, renderPhoto = true, fatherId = undefined } = $props();
+    let {
+        onclick,
+        content,
+        index,
+        renderPhoto = true,
+        fatherId = undefined,
+    } = $props();
 
     let Liked = $derived.by(() => {
         if (content === undefined) {
@@ -21,7 +32,20 @@
         return false;
     });
 
-    let IsLocal = false;
+    let IsLocal = $derived.by(() => {
+        if (content === undefined) {
+            return false;
+        }
+
+
+        let itemfound = $downloaded.find((id) => content.id === id);
+
+        if (itemfound != undefined) {
+            return true;
+        }
+
+        return false;
+    });
 
     let imgurl = $state();
 
@@ -30,7 +54,6 @@
     }
 
     onMount(() => {
-
         content.playlistId = fatherId;
 
         if (renderPhoto) {
@@ -48,10 +71,7 @@
     }}
 >
     <div class="button-content">
-        <button
-            {onclick}
-            class="song-button">.</button
-        >
+        <button {onclick} class="song-button">.</button>
 
         {#if renderPhoto}
             <img
@@ -141,7 +161,14 @@
             >
                 <img src="/assets/badge/like.png" alt="" />
             </button>
-            <button style="opacity: {IsLocal ? '1' : '0.3'};">
+            <button
+                onclick={() => {
+                    if (IsLocal) {
+                        DownloadSong(content.id);
+                    }
+                }}
+                style="opacity: {IsLocal ? '1' : '0.3'};"
+            >
                 <img src="/assets/badge/local.png" alt="" />
             </button>
         </div>
@@ -390,5 +417,4 @@
         width: 72px;
         object-fit: cover;
     }
-
 </style>

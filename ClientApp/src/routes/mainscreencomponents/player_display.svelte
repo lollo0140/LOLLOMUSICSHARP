@@ -1,5 +1,4 @@
 <script>
-    import { GetDefPng } from "../../scripts/defPngManager";
     import {
         NavigateToAlbum,
         NavigateToArtist,

@@ -3,11 +3,8 @@
 
     async function loadList() {
         playlist = [];
-        let content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke(
-                "getLibraryPlaylists",
-            ),
-        );
+        let content = await EInvokeJSON("getLibraryPlaylists");
+
         content = content.Result.items;
         content.splice(0, 1);
 
@@ -20,22 +17,30 @@
 </script>
 
 <script>
+    let onlineMod = $derived(navigator.onLine);
+
     import { onMount } from "svelte";
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import NavBarPButton from "./navBarPButton.svelte";
     import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
     import { fly } from "svelte/transition";
+    import { goto } from "$app/navigation";
+    import { EInvokeJSON } from "../../scripts/electronInvoker.js";
 
     onMount(async () => {
         await loadList();
+
+        await goto("/library", { replaceState: true });
     });
 </script>
 
 <main>
     <div class="page-button-container">
-        <button class="page-button" onclick={() => NavigateTo("/")}>
-            <img src="/assets/navbar/home.png" alt="" />
-        </button>
+        {#if onlineMod}
+            <button class="page-button" onclick={() => NavigateTo("/")}>
+                <img src="/assets/navbar/home.png" alt="" />
+            </button>
+        {/if}
         <button class="page-button" onclick={() => NavigateTo("/search")}>
             <img src="/assets/navbar/search.png" alt="" />
         </button>
@@ -56,6 +61,10 @@
             </div>
         {/each}
     </div>
+
+    <button class="page-button" onclick={() => NavigateTo("/settings")}>
+        settings
+    </button>
 </main>
 
 <style>
@@ -63,6 +72,9 @@
         position: absolute;
 
         top: 250px;
+        bottom: 50px;
+
+        width: 100%;
 
         overflow-y: scroll;
     }

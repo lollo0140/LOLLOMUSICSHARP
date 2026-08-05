@@ -94,7 +94,7 @@
         padding: 0px;
         margin-right: 0px;
 
-        backdrop-filter: blur(10px) brightness(0.6);
+        backdrop-filter: blur(10px) ;
         cursor: pointer;
 
         color: rgba(255, 255, 255, 0.7);
