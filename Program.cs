@@ -195,7 +195,7 @@ class Program
         var Window = await Electron.WindowManager.CreateWindowAsync(options);
 
 
-        IpcMain.RegisterEvents(Window);
+        _ = IpcMain.RegisterEvents(Window);
         IpcMain.RegisterHandlers(Window);
 
 
