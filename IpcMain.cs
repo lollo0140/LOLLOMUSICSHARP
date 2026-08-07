@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
+using JsonExtensions;
 using Newtonsoft.Json.Linq;
 using YoutubeMusic;
 
@@ -17,6 +18,8 @@ class IpcMain
 
     public static YTMusicSharp YTClient;
     public static string? downloadPath = null;
+
+    public static string downloadJSONPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "downloaded.json");
 
     public static string libraryDataPath = Path.Combine(Directory.GetCurrentDirectory(), "YTlibrary.json");
 
@@ -505,10 +508,29 @@ class IpcMain
             return await ElectronFunctions.OpenDirectoryPicker(win);
         });
 
-        RegisterHandle(win, "downloadSong", async (string id) =>
+        RegisterHandle(win, "getDownloaded", async () =>
         {
 
+            var downloaded = JsonNode.Parse(File.ReadAllText(downloadJSONPath)).AsObject();
+
+            JsonArray arr = [];
+
+            foreach (var item in downloaded)
+            {
+                arr.Add(item.Value.DeepClone());
+            }
+
+            return JsonSerializer.Serialize(arr);
+
+        });
+
+        RegisterHandle(win, "downloadSong", async (string id, string serializedVideoInfo) =>
+        {
             System.Console.WriteLine($"saving {id} to {downloadPath}");
+
+            System.Console.WriteLine(serializedVideoInfo);
+
+            System.Console.WriteLine("-----------------------------------");
 
             if (downloadPath != null)
             {
@@ -518,6 +540,19 @@ class IpcMain
             {
                 await YTClient.SaveVideoPermanent(id);
             }
+
+            if (!File.Exists(downloadJSONPath))
+            {
+                File.WriteAllText(downloadJSONPath, "{}");
+            }
+
+            JsonObject downloaded = (JsonObject)JsonNode.Parse(File.ReadAllText(downloadJSONPath));
+
+            JsonObject _ = JsonNode.Parse(serializedVideoInfo).AsObject();
+
+            downloaded[id] = _;
+
+            File.WriteAllText(downloadJSONPath, JsonSerializer.Serialize(downloaded));
 
         });
 

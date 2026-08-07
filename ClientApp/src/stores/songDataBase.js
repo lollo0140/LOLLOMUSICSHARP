@@ -1,4 +1,5 @@
 import { get, writable } from "svelte/store";
+import { EInvoke } from "../scripts/electronInvoker";
 
 
 export let likedSongs = writable([]);
@@ -76,16 +77,17 @@ export async function SetVideoLike(id, like) {
 }
 
 
-export async function DownloadSong(id) {
+export async function DownloadSong(id, jsonContent) {
 
     console.log("downloading: " + id);
 
-
-    await window.electron.ipcRenderer.lolloInvoke("downloadSong", id)
+    await EInvoke("downloadSong", id, jsonContent)
 
     if (get(downloaded).find(x => x === id) != undefined) {
         downloaded.update(ids => {
-            return [...ids, id]
+
+            return [...ids].push(id);
+
         })
     }
 

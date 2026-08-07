@@ -3,7 +3,8 @@
     import LoadingAnimation from "../svelte_components/reusable/LoadingAnimation.svelte";
     import HomeSection from "./HomeSection.svelte";
     import { fly } from "svelte/transition";
-    import { SetPageButtons } from "./mainscreencomponents/UpperBar.svelte";
+    import { SetHomeButton } from "./+page";
+    import { EInvokeJSON } from "../scripts/electronInvoker";
 
     let content = $state(undefined);
 
@@ -17,24 +18,10 @@
     };
 
     onMount(async () => {
-        SetPageButtons([
-            {
-                text: "reload",
-                onclick: async () => {
-                    content = undefined;
-                    let newContent =
-                        await window.electron.ipcRenderer.lolloInvoke(
-                            "getHome",
-                        );
-                    newContent = JSON.parse(newContent);
-                    content = newContent.Result.sections;
-                },
-            },
-        ]);
+        SetHomeButton();
 
-        content = await window.electron.ipcRenderer.lolloInvoke("getHome");
-        content = JSON.parse(content);
-        content = content.Result.sections;
+        let _ = await EInvokeJSON("getHome");
+        content = _.Result.sections;
     });
 </script>
 

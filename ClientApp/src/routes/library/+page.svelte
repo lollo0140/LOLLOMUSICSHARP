@@ -7,6 +7,9 @@
     import { fly } from "svelte/transition";
     import { reloadSidebarList } from "../mainscreencomponents/navigation_bar.svelte";
     import { CreatePlaylist } from "../EditPLaylistMenu.svelte";
+    import { derived } from "svelte/store";
+    import { EInvokeJSON } from "../../scripts/electronInvoker";
+    import DownloadedSquareButton from "../../svelte_components/single/DownloadedSquareButton.svelte";
 
     let content = $state(undefined);
 
@@ -208,8 +211,13 @@
         },
     };
 
+    let showDownloadedButton = $state();
+
     onMount(async () => {
         SetDefButtonsAndContent();
+        const _ = (await EInvokeJSON("getDownloaded")) ?? [];
+
+        showDownloadedButton = _.length > 0;
     });
 </script>
 
@@ -225,6 +233,10 @@
         >
             <div><p>+</p></div>
         </button>
+
+        {#if showDownloadedButton}
+            <DownloadedSquareButton />
+        {/if}
     {/if}
 
     {#if content == undefined || content == []}

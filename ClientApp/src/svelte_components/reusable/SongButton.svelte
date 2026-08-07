@@ -163,8 +163,8 @@
             </button>
             <button
                 onclick={() => {
-                    if (IsLocal) {
-                        DownloadSong(content.id);
+                    if (!IsLocal) {
+                        DownloadSong(content.id, JSON.stringify(content));
                     }
                 }}
                 style="opacity: {IsLocal ? '1' : '0.3'};"
