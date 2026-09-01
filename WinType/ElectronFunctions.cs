@@ -13,10 +13,10 @@ class ElectronFunctions
         var options = new OpenDialogOptions
         {
             Title = "Select a directory",
-            Properties = new[]
-            {
+            Properties =
+            [
                 OpenDialogProperty.openDirectory
-            }
+            ]
         };
 
         string[] result = await Electron.Dialog.ShowOpenDialogAsync(activeWin, options);

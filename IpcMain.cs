@@ -9,32 +9,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
-using JsonExtensions;
+using LOLLOMUSICX;
 using Newtonsoft.Json.Linq;
 using YoutubeMusic;
 
 class IpcMain
 {
 
-    public static YTMusicSharp YTClient;
-    public static string? downloadPath = null;
-
-    public static string downloadJSONPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "downloaded.json");
-
-    public static string libraryDataPath = Path.Combine(Directory.GetCurrentDirectory(), "YTlibrary.json");
-
-    public class AudioHandler
-    {
-
-        public AudioHandler() { }
-
-        public YTMusicSharp GetYTClient()
-        {
-            return YTClient;
-        }
-        public async Task<string> GetAudioData(string id) => await YTClient.GetYTAudioById(id);
-
-    }
 
 
 
@@ -145,7 +126,7 @@ class IpcMain
 
                 }
 
-                File.WriteAllText("./ytheaders.json", JsonSerializer.Serialize(cookiesJsonObject));
+                File.WriteAllText(Program.userSessionJSON, JsonSerializer.Serialize(cookiesJsonObject));
 
 
                 YTWindow.Destroy();
@@ -170,7 +151,7 @@ class IpcMain
 
     public static void RegisterHandlers(BrowserWindow win)
     {
-        Electron.IpcMain.On("setWinState", (state) =>
+        Electron.IpcMain.On("setWinState", async (state) =>
         {
 
             string State = (string)state;
@@ -185,6 +166,17 @@ class IpcMain
                 FlyoutWindow.setWinOpenedPosition(win);
             }
 
+            if (State == "minimize") win.Minimize();
+
+            if (State == "maximize")
+            {
+                if (await win.IsMaximizedAsync()) win.Unmaximize();
+                else win.Maximize();
+            }
+
+            if (State == "exit") win.Close();
+
+
         });
 
 
@@ -198,17 +190,11 @@ class IpcMain
 
         RegisterHandle(win, "loginYT", () =>
         {
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-            string jsonPath = Path.Join(baseDirectory, "ytheaders.json");
-            if (File.Exists(jsonPath))
+            if (File.Exists(Program.userSessionJSON))
             {
+                JsonObject headers = (JsonObject)JsonNode.Parse(File.ReadAllText(Program.userSessionJSON));
 
-                JsonObject headers = (JsonObject)JsonNode.Parse(File.ReadAllText(jsonPath));
-
-                YTClient = new YTMusicSharp(
-                    youtubHeaders: headers,
-                    workspacePath: baseDirectory
-                );
+                Program.yTMusicClient = new(headers);
                 return true;
             }
             else
@@ -221,7 +207,7 @@ class IpcMain
         RegisterHandle(win, "getLogInfo", async () =>
         {
 
-            JsonObject loggedUser = await YTClient.AccountEndpoint.GetLoggedUser();
+            JsonObject loggedUser = await Program.yTMusicClient.AccountEndpoint.GetLoggedUser();
 
             return JsonSerializer.Serialize(loggedUser);
 
@@ -229,7 +215,8 @@ class IpcMain
 
         RegisterHandle(win, "LogOff", async () =>
         {
-            File.Delete("./ytheaders.json");
+            File.Delete(Program.userSessionJSON);
+            Program.yTMusicClient = new();
         });
 
         //YOUTUBE HANDLERS
@@ -240,54 +227,15 @@ class IpcMain
         RegisterSystemHandlers(win);
 
 
-        RegisterHandle(win, "GetFromDB", (string id, string filter) =>
-        {
-
-            DB_filter F;
-
-
-            switch (filter)
-            {
-                case "album":
-                    F = DB_filter.ALBUM;
-                    break;
-
-                case "playlist":
-                    F = DB_filter.PLAYLIST;
-                    break;
-
-                case "artist":
-                    F = DB_filter.ARTIST;
-                    break;
-
-                case "library":
-                    F = DB_filter.LIBRARY;
-                    break;
-
-                case "cached":
-                    F = DB_filter.CACHEDSONG;
-                    break;
-
-                case "downloaded":
-                    F = DB_filter.DOWNLOADED;
-                    break;
-
-                default:
-                    return "none";
-            }
-
-            return JsonSerializer.Serialize(YTClient.GetFromLocalDB(F, id));
-        });
-
         RegisterHandle(win, "subscribeArtist", async (string id, bool state) =>
         {
-            await YTClient.InteractionsEndpoint.SetArtistSubscription(id, state);
+            await Program.yTMusicClient.InteractionsEndpoint.SetArtistSubscription(id, state);
         });
 
         RegisterHandle(win, "setSaveAlbum", (string browseId, bool state) =>
         {
 
-            YTClient.InteractionsEndpoint.SetPlaylistSave(browseId, state);
+            Program.yTMusicClient.InteractionsEndpoint.SetPlaylistSave(browseId, state);
 
         });
 
@@ -309,14 +257,14 @@ class IpcMain
                     break;
             }
 
-            await YTClient.InteractionsEndpoint.SetSongLikeStatus(id, likeStatusFinal);
+            await Program.yTMusicClient.InteractionsEndpoint.SetSongLikeStatus(id, likeStatusFinal);
 
         });
 
         RegisterHandle(win, "getSearchSugg", async (string key) =>
         {
 
-            JsonArray sugesstions = await YTClient.SearchEndpoint.GetSearchSugg(key);
+            JsonArray sugesstions = await Program.yTMusicClient.SearchEndpoint.GetSearchSugg(key);
 
             return JsonSerializer.Serialize(sugesstions);
 
@@ -330,15 +278,15 @@ class IpcMain
             switch (type)
             {
                 case "album":
-                    Return = JsonSerializer.Serialize(await YTClient.BrowseEndpoint.FetchAlbumDataSongsOnly(browseId));
+                    Return = JsonSerializer.Serialize(await Program.yTMusicClient.BrowseEndpoint.FetchAlbumData(browseId));
                     break;
 
                 case "playlist":
-                    Return = JsonSerializer.Serialize(await YTClient.BrowseEndpoint.FetchPlaylistData(browseId));
+                    Return = JsonSerializer.Serialize(await Program.yTMusicClient.BrowseEndpoint.FetchPlaylistData(browseId));
                     break;
 
                 case "artist":
-                    Return = JsonSerializer.Serialize(await YTClient.BrowseEndpoint.FetchArtistPage(browseId));
+                    Return = JsonSerializer.Serialize(await Program.yTMusicClient.BrowseEndpoint.FetchArtistPage(browseId));
                     break;
 
                 default:
@@ -354,17 +302,17 @@ class IpcMain
         //add to playlist
         RegisterHandle(win, "addToPlaylistMenu", async () =>
         {
-            return JsonSerializer.Serialize(await YTClient.InteractionsEndpoint.GetAddToPlaylistMenu());
+            return JsonSerializer.Serialize(await Program.yTMusicClient.InteractionsEndpoint.GetAddToPlaylistMenu());
         });
 
         RegisterHandle(win, "removeFromplaylist", async (string id, string setVideoId, string playlistId) =>
         {
-            await YTClient.InteractionsEndpoint.RemoveVideoFromPlaylist(id, setVideoId, playlistId);
+            await Program.yTMusicClient.InteractionsEndpoint.RemoveVideoFromPlaylist(id, setVideoId, playlistId);
         });
 
         RegisterHandle(win, "addToplaylist", async (string[] ids, string playlistId) =>
         {
-            await YTClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
+            await Program.yTMusicClient.InteractionsEndpoint.AddVideoToPlaylist(ids, playlistId);
         });
 
         //PLAYLISTS -------------------------------
@@ -388,7 +336,7 @@ class IpcMain
                     break;
             }
 
-            await YTClient.InteractionsEndpoint.EditPLaylist(playlistId, pTitle: name, pDescriprtion: desc, privacyStatus: PS);
+            await Program.yTMusicClient.InteractionsEndpoint.EditPLaylist(playlistId, pTitle: name, pDescriprtion: desc, privacyStatus: PS);
 
         });
 
@@ -412,13 +360,13 @@ class IpcMain
                     break;
             }
 
-            await YTClient.InteractionsEndpoint.CreatePlaylist(pTitle: name, pDescriprtion: desc, privacyStatus: PS);
+            await Program.yTMusicClient.InteractionsEndpoint.CreatePlaylist(pTitle: name, pDescriprtion: desc, privacyStatus: PS);
 
         });
 
         RegisterHandle(win, "DeletePlaylist", async (string playlistId) =>
         {
-            await YTClient.InteractionsEndpoint.DeletePLaylist(playlistId);
+            await Program.yTMusicClient.InteractionsEndpoint.DeletePLaylist(playlistId);
         });
 
 
@@ -426,12 +374,17 @@ class IpcMain
         RegisterHandle(win, "getSettings", async () =>
         {
 
-            string fileContent = File.ReadAllText(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json"));
+            string fileContent = File.ReadAllText(Program.settingsJSONPath);
             JsonNode settings = JsonNode.Parse(fileContent);
 
-            downloadPath = settings["localData"]["downloadPath"].GetValue<string>();
-
             return fileContent;
+
+        });
+
+        RegisterHandle(win, "saveSettings", async (string jsonString) =>
+        {
+
+            File.WriteAllText(Program.settingsJSONPath, jsonString);
 
         });
 
@@ -439,7 +392,7 @@ class IpcMain
 
     }
 
-    static async Task SetWinHide(BrowserWindow win, bool value)
+    public static async Task SetWinHide(BrowserWindow win, bool value)
     {
         if (OperatingSystem.IsLinux())
         {
@@ -474,7 +427,6 @@ class IpcMain
     public static async Task RegisterEvents(BrowserWindow win)
     {
 
-        string shortcut = "CommandOrControl+Shift+M";
 
         await Electron.IpcMain.On("setHideWinValue", async (value) =>
         {
@@ -483,18 +435,10 @@ class IpcMain
 
         });
 
-        Electron.GlobalShortcut.Register(shortcut, async () =>
-        {
-            System.Console.WriteLine("Shortcut attivato!");
-
-            await SetWinHide(win, false);
-
-            Electron.IpcMain.Send(win, "showWin");
-        });
 
         win.OnClose += () =>
         {
-            YTClient.ReleaseCached();
+            Utility.CleanDir(Program.cachedVideosPath);
         };
     }
 
@@ -508,80 +452,84 @@ class IpcMain
             return await ElectronFunctions.OpenDirectoryPicker(win);
         });
 
-        RegisterHandle(win, "getDownloaded", async () =>
+        RegisterHandle(win, "downloadSong", async (string sedialized) =>
         {
-
-            var downloaded = JsonNode.Parse(File.ReadAllText(downloadJSONPath)).AsObject();
-
-            JsonArray arr = [];
-
-            foreach (var item in downloaded)
+            try
             {
-                arr.Add(item.Value.DeepClone());
+                var songContent = (JsonObject)JsonNode.Parse(sedialized);
+                System.Console.WriteLine($"DOWNLOADING VIDEO: {songContent["id"].GetValue<string>()}");
+
+                if (!songContent.ContainsKey("id"))
+                {
+                    return false;
+                }
+
+                string songId = songContent["id"].GetValue<string>();
+
+                string destinationPath = Path.Join(Program.downloadPAth, $"{songId}.webm");
+
+
+                songContent["path"] = destinationPath;
+
+
+                var _ = Path.Join(Program.cachedVideosPath, $"{songId}.webm");
+                if (File.Exists(_))
+                {
+                    File.Copy(_, destinationPath);
+                }
+                else
+                {
+                    await Program.yTMusicClient.DownloadVideoById(songId, destinationPath);
+                }
+
+
+
+
+                JsonObject json = Utility.ReadJsonObject(Program.JSONDownloadsPath);
+                json[songId] = songContent;
+
+                Utility.WriteJsonFile(Program.JSONDownloadsPath, json);
+
+                return true;
+
             }
-
-            return JsonSerializer.Serialize(arr);
-
+            catch (Exception e)
+            {
+                System.Console.WriteLine("Error downloading video: " + e.ToString());
+                return false;
+            }
         });
 
-        RegisterHandle(win, "downloadSong", async (string id, string serializedVideoInfo) =>
+        RegisterHandle(win, "removeLocal", async (string id) =>
         {
-            System.Console.WriteLine($"saving {id} to {downloadPath}");
-
-            System.Console.WriteLine(serializedVideoInfo);
-
-            System.Console.WriteLine("-----------------------------------");
-
-            if (downloadPath != null)
+            var downloads = (JsonObject)JsonNode.Parse(File.ReadAllText(Program.JSONDownloadsPath));
+            if (downloads.ContainsKey(id))
             {
-                await YTClient.SaveVideoPermanent(id, downloadPath);
+                var p = downloads[id]["path"].GetValue<string>();
+
+                downloads.Remove(id);
+                File.Delete(p);
             }
-            else
-            {
-                await YTClient.SaveVideoPermanent(id);
-            }
-
-            if (!File.Exists(downloadJSONPath))
-            {
-                File.WriteAllText(downloadJSONPath, "{}");
-            }
-
-            JsonObject downloaded = (JsonObject)JsonNode.Parse(File.ReadAllText(downloadJSONPath));
-
-            JsonObject _ = JsonNode.Parse(serializedVideoInfo).AsObject();
-
-            downloaded[id] = _;
-
-            File.WriteAllText(downloadJSONPath, JsonSerializer.Serialize(downloaded));
-
+            File.WriteAllText(Program.JSONDownloadsPath, downloads.ToString());
         });
+
+
 
         RegisterHandle(win, "scanDownloaded", async () =>
         {
-            string _;
+            JsonObject _ = Utility.ReadJsonObject(Program.JSONDownloadsPath);
 
-            if (downloadPath != null)
-            {
-                _ = downloadPath;
-            }
-            else
-            {
-                _ = YTClient.downloadPath;
-            }
+            JsonArray arr = [.. _.Select(x => x.Key).ToList()];
 
-            JsonArray localIds = [ .. Directory.GetFiles(_)
-                .Where(file => Path.GetExtension(file).Equals(".webm", StringComparison.OrdinalIgnoreCase))
-                .Select(file => Path.GetFileNameWithoutExtension(file)) ];
+            return JsonSerializer.Serialize(arr);
+        });
 
+        RegisterHandle(win, "getDownloaded", async () =>
+        {
+            var _ = Utility.ReadJsonObject(Program.JSONDownloadsPath);
 
-            if (localIds.Count > 0)
-            {
-                return JsonSerializer.Serialize(localIds);
-            }
-            else
-            {
-                return JsonSerializer.Serialize(new JsonArray());
-            }
+            JsonArray array = [.. _.Select(element => element.Value.DeepClone())];
+            return JsonSerializer.Serialize(array);
         });
 
     }
@@ -625,17 +573,17 @@ class IpcMain
 
             if (contentType == ContentType.All)
             {
-                return JsonSerializer.Serialize(YTClient.SearchEndpoint.GenericSearch(searckKey));
+                return JsonSerializer.Serialize(Program.yTMusicClient.SearchEndpoint.GenericSearch(searckKey));
             }
 
-            return JsonSerializer.Serialize(YTClient.SearchEndpoint.SpecificSearch(searckKey, contentType));
+            return JsonSerializer.Serialize(Program.yTMusicClient.SearchEndpoint.SpecificSearch(searckKey, contentType));
         });
     }
     public static void RegisterHomeHandlers(BrowserWindow win)
     {
         RegisterHandle(win, "getHome", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.BrowseEndpoint.FetchHomeSections());
+            return JsonSerializer.Serialize(Program.yTMusicClient.BrowseEndpoint.FetchHomeSections());
         });
     }
     public static void RegisterLybraryHandlers(BrowserWindow win)
@@ -644,41 +592,30 @@ class IpcMain
         RegisterHandle(win, "getLibraryPage", async () =>
         {
 
-            string serializedData = JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryLandingPage());
-
-            File.WriteAllText(libraryDataPath, serializedData);
+            string serializedData = JsonSerializer.Serialize(Program.yTMusicClient.LibraryEndpoint.GetLibraryLandingPage());
 
             return serializedData;
         });
 
-        RegisterHandle(win, "getSavedYTLibrary", async () =>
-        {
-            if (File.Exists(libraryDataPath))
-            {
-                return File.ReadAllText(libraryDataPath);
-            }
-
-            return "[]";
-        });
 
         RegisterHandle(win, "getLibraryPlaylists", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Playlists));
+            return JsonSerializer.Serialize(Program.yTMusicClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Playlists));
         });
 
         RegisterHandle(win, "getLibraryAlbums", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Albums));
+            return JsonSerializer.Serialize(Program.yTMusicClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Albums));
         });
 
         RegisterHandle(win, "getLibraryArtists", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Artists));
+            return JsonSerializer.Serialize(Program.yTMusicClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Artists));
         });
 
         RegisterHandle(win, "getLibrarySubscribed", async () =>
         {
-            return JsonSerializer.Serialize(YTClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Subscribed));
+            return JsonSerializer.Serialize(Program.yTMusicClient.LibraryEndpoint.GetLibraryContent(ContentFilter.Subscribed));
         });
 
     }

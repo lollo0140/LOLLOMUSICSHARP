@@ -18,36 +18,11 @@
         fatherId = undefined,
     } = $props();
 
-    let Liked = $derived.by(() => {
-        if (content === undefined) {
-            return false;
-        }
+    let Liked = $derived($likedSongs.has(content.id));
 
-        let itemfound = $likedSongs.find((id) => content.id === id);
+    let IsLocal = $derived($downloaded.has(content.id));
 
-        if (itemfound != undefined) {
-            return true;
-        }
-
-        return false;
-    });
-
-    let IsLocal = $derived.by(() => {
-        if (content === undefined) {
-            return false;
-        }
-
-
-        let itemfound = $downloaded.find((id) => content.id === id);
-
-        if (itemfound != undefined) {
-            return true;
-        }
-
-        return false;
-    });
-
-    let imgurl = $state();
+    let imgurl = $state("");
 
     async function SetDefault() {
         imgurl = await GetDefPng("track");
@@ -76,8 +51,10 @@
         {#if renderPhoto}
             <img
                 class={content.type === "video" ? "videoImg" : ""}
-                src={imgurl}
+                src={imgurl.replace("w60-h60-l90-rj", "w30-h30-l90-rj").replace("w120-h120-l90-rj", "w30-h30-l90-rj")}
                 alt=""
+                decoding="async"
+                loading="lazy"
                 onerror={() => {
                     SetDefault();
                 }}
@@ -157,6 +134,7 @@
                 style="opacity: {Liked ? '1' : '0.3'};"
                 onclick={() => {
                     SetVideoLike(content.id, !Liked);
+                    Liked = !Liked;
                 }}
             >
                 <img src="/assets/badge/like.png" alt="" />
@@ -164,7 +142,7 @@
             <button
                 onclick={() => {
                     if (!IsLocal) {
-                        DownloadSong(content.id, JSON.stringify(content));
+                        DownloadSong(content);
                     }
                 }}
                 style="opacity: {IsLocal ? '1' : '0.3'};"
@@ -312,8 +290,6 @@
         height: 55px;
         padding: 0px;
 
-        margin-bottom: 5px;
-
         cursor: pointer;
 
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
@@ -408,8 +384,6 @@
         transform: translateX(5px);
 
         background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0px 10px 30px 10px rgba(0, 0, 0, 0.2);
-
         z-index: 2;
     }
 

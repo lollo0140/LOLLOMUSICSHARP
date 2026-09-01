@@ -1,16 +1,13 @@
 <script>
     import { SetPageButtons } from "../mainscreencomponents/UpperBar.svelte";
-    import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
 
     import { page } from "$app/state";
     import { onMount } from "svelte";
-    import { fly } from "svelte/transition";
-    import PageHeader from "../../svelte_components/reusable/PageHeader.svelte";
     import { NavigateToArtist } from "../../scripts/navigationScript";
-    import SongListRenderer from "../../svelte_components/reusable/SongListRenderer.svelte";
     import { SetPlaylistSave } from "../../scripts/savedElements";
     import { GetAlbumPage } from "../../scripts/browser";
-    import { openPageContextMenu } from "../ContextMenu.svelte";
+    import PlaylistPage from "../../svelte_components/reusable/page/PlaylistPage.svelte";
+    import { DownloadList } from "../../stores/songDataBase";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
@@ -35,99 +32,84 @@
     });
 </script>
 
-{#if content != undefined}
-    <main in:fly={{ y: -50 }}>
-        <PageHeader
-            bgImmage={content.data.thumbnails[
-                content.data.thumbnails.length - 1
-            ]}
-            label={content.data.subtitle.split("\u2022")[0].toUpperCase()}
+<PlaylistPage {content}>
+    {#if content?.data?.title}
+        <p class="PL-title">
+            {(content.data.title ?? "").toUpperCase()}
+        </p>
+    {/if}
+
+    {#if content?.data?.artist}
+        <button
+            class="PL-artist"
+            onclick={() => {
+                NavigateToArtist(content?.data?.artist.browseId);
+            }}
         >
-            {#if content?.data?.title}
-                <p class="PL-title">
-                    {(content.data.title ?? "").toUpperCase()}
-                </p>
-            {/if}
+            {content?.data?.artist?.name}
+        </button>
+    {/if}
 
-            {#if content?.data?.artist}
-                <button
-                    class="PL-artist"
-                    onclick={() => {
-                        NavigateToArtist(content?.data?.artist.browseId);
-                    }}
-                >
-                    {content?.data?.artist?.name}
-                </button>
-            {/if}
+    {#if content?.data?.description}
+        <p class="PL-desc">
+            {(content.data.description ?? "").toUpperCase()}
+        </p>
+    {/if}
 
-            {#if content?.data?.description}
-                <p class="PL-desc">
-                    {(content.data.description ?? "").toUpperCase()}
-                </p>
-            {/if}
-
-            <div class="PL-subtitles">
-                <p>
-                    {content.data.subtitle.replace("EP \u2022 ", "").replace("Album \u2022 ", "")}
-                </p>
-                <p>{content.data.secondSubtitle}</p>
-            </div>
-
-            <div class="PL-actions">
-                <button
-                    style={content.data.saved ? "opacity: 1;" : "opacity: 0.3;"}
-                    onclick={() => {
-                        content.data.saved = !content.data.saved;
-                        SetPlaylistSave(
-                            content.data.saveParam,
-                            content.data.saved,
-                        );
-                    }}
-                >
-                    <img src="./assets/buttons/bookmark.png" alt="" />
-                </button>
-
-                <button
-                    onclick={navigator.clipboard
-                        .writeText(content.data.shareLink)
-                        .then(() => {
-                            shareButtonText = true;
-
-                            setTimeout(() => {
-                                shareButtonText = false;
-                            }, 1300);
-                        })}
-                >
-                    <img src="./assets/buttons/share.png" alt="" />
-
-                    {#if shareButtonText}
-                        <p transition:fly={{ x: -10 }}>Share link copied!</p>
-                    {/if}
-                </button>
-
-                <button>
-                    <img src="./assets/buttons/download.png" alt="" />
-                </button>
-
-                <button class="page-menu" onclick={(e) => {openPageContextMenu(e, content, "playlist")}} >
-                    <img src="./assets/buttons/more_options.png" alt="" />
-                </button>
-            </div>
-        </PageHeader>
-
-        <div style="margin-top: 5px;">
-            <SongListRenderer
-                content={content.items ?? []}
-                renderPhoto={false}
-                from={(content.data.title ?? "").toUpperCase()}
-            />
-        </div>
-    </main>
-{:else}
-    <div style="height: min-content;">
-        <LoadingAnimation />
+    <div class="PL-subtitles">
+        <p>
+            {content.data.subtitle
+                .replace("EP \u2022 ", "")
+                .replace("Album \u2022 ", "")}
+        </p>
+        <p>{content.data.secondSubtitle}</p>
     </div>
-{/if}
+
+    <div class="PL-actions">
+        <button
+            style={content.data.saved ? "opacity: 1;" : "opacity: 0.3;"}
+            onclick={() => {
+                content.data.saved = !content.data.saved;
+                SetPlaylistSave(content.data.saveParam, content.data.saved);
+            }}
+        >
+            <img src="./assets/buttons/bookmark.png" alt="" />
+        </button>
+
+        <button
+            onclick={navigator.clipboard
+                .writeText(content.data.shareLink)
+                .then(() => {
+                    shareButtonText = true;
+
+                    setTimeout(() => {
+                        shareButtonText = false;
+                    }, 1300);
+                })}
+        >
+            <img src="./assets/buttons/share.png" alt="" />
+
+            {#if shareButtonText}
+                <p transition:fly={{ x: -10 }}>Share link copied!</p>
+            {/if}
+        </button>
+
+        <button onclick={ () => {
+            DownloadList(content.items);
+        }}>
+            <img src="./assets/buttons/download.png" alt="" />
+        </button>
+
+        <button
+            class="page-menu"
+            onclick={(e) => {
+                openPageContextMenu(e, content, "playlist");
+            }}
+        >
+            <img src="./assets/buttons/more_options.png" alt="" />
+        </button>
+    </div>
+</PlaylistPage>
 
 <style>
     .PL-artist {
@@ -201,7 +183,8 @@
     }
 
     main {
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: scroll;
     }
 
     .PL-title {

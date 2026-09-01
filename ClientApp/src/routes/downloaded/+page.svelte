@@ -6,60 +6,55 @@
     import SongListRenderer from "../../svelte_components/reusable/SongListRenderer.svelte";
     import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
     import { fly } from "svelte/transition";
+    import PlaylistPage from "../../svelte_components/reusable/page/PlaylistPage.svelte";
 
     let content = $state();
 
     onMount(async () => {
         setLocalSongs();
-        content = await EInvokeJSON("getDownloaded");
+
+        let items = await EInvokeJSON("getDownloaded");
+
+        let data = {
+            thumbnails: ""
+        }
+
+        content = {
+            items,
+            data
+        }
     });
 </script>
 
-{#if content != undefined}
-    <main in:fly={{ y: -50 }}>
-        <PageHeader
-            bgImmage={"/assets/defpng/def_playlist_icon.png"}
-            label={"PLAYLIST"}
-        >
-            <p class="PL-title">DOWNLOADED</p>
+<PlaylistPage {content}>
+    <p class="PL-title">DOWNLOADED</p>
 
-            <p class="PL-desc">DOWNLOADED SONGS</p>
+    <p class="PL-desc">DOWNLOADED SONGS</p>
 
-            <div class="PL-subtitles">
-                <p> {`${content.length} ${ content.length > 1 ? "songs" : "song"}  \u2022`}  AUTOMATIC PLAYLIST</p>
-            </div>
-
-            <div class="facepile">
-                <div>
-                    <img class="profile-icon" src="/Icon.png" alt="" />
-                </div>
-            </div>
-
-            <div class="PL-actions">
-                <button
-                    class="page-menu"
-                    onclick={(e) => {
-                        openPageContextMenu(e, content, "playlist");
-                    }}
-                >
-                    <img src="./assets/buttons/more_options.png" alt="" />
-                </button>
-            </div>
-        </PageHeader>
-
-        <div class="PL-elements">
-            <SongListRenderer
-                {content}
-                playlistId={undefined}
-                from={"DOWNLOADED"}
-            />
-        </div>
-    </main>
-{:else}
-    <div style="height: min-content;">
-        <LoadingAnimation />
+    <div class="PL-subtitles">
+        <p>
+            {`${content.items.length} ${content.items.length > 1 ? "songs" : "song"}  \u2022`}
+            AUTOMATIC PLAYLIST
+        </p>
     </div>
-{/if}
+
+    <div class="facepile">
+        <div>
+            <img class="profile-icon" src="/Icon.png" alt="" />
+        </div>
+    </div>
+
+    <div class="PL-actions">
+        <button
+            class="page-menu"
+            onclick={(e) => {
+                openPageContextMenu(e, content, "playlist");
+            }}
+        >
+            <img src="./assets/buttons/more_options.png" alt="" />
+        </button>
+    </div>
+</PlaylistPage>
 
 <style>
     .PL-actions {

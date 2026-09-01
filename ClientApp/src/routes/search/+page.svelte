@@ -87,7 +87,7 @@
     </p>
 
     {#if content != undefined}
-        <div in:fly={{y:-50}}>
+        <div in:fly={{ y: -50 }}>
             <div class="filters">
                 <button
                     onclick={() => {
@@ -165,7 +165,17 @@
                         <div class="best-result-content">
                             {#if content.bestResult.content && content.bestResult.content.length > 1}
                                 {#each content.bestResult.content as item}
-                                    <ResultListElement content={item} from={`results for: ${searchKey}`} onclick={() => {SetCurrentPlaylist([item], 0, `top results: ${searchKey}`)}}/>
+                                    <ResultListElement
+                                        content={item}
+                                        from={`results for: ${searchKey}`}
+                                        onclick={() => {
+                                            SetCurrentPlaylist(
+                                                [item],
+                                                0,
+                                                `top results: ${searchKey}`,
+                                            );
+                                        }}
+                                    />
                                 {/each}
                             {/if}
                         </div>
@@ -173,13 +183,19 @@
 
                     <div>
                         {#each content.sections as section}
-                            <ResultElement content={section} from={`results for: ${searchKey}`}/>
+                            <ResultElement
+                                content={section}
+                                from={`results for: ${searchKey}`}
+                            />
                         {/each}
                     </div>
                 </div>
             {:else if activeFilter === "traks" || activeFilter === "videos"}
                 <p class="section-title">{activeFilter}</p>
-                <SongListRenderer content={content.results} from={`results for: ${searchKey}`}/>
+                <SongListRenderer
+                    content={content.results}
+                    from={`results for: ${searchKey}`}
+                />
             {:else}
                 <p class="section-title">{activeFilter}</p>
 
@@ -187,6 +203,8 @@
                     <ResultListElement content={item} />
                 {/each}
             {/if}
+
+            <div class="spacer"></div>
         </div>
     {:else if loading}
         <LoadingAnimation />
@@ -251,7 +269,14 @@
     }
 
     main {
-        height: max-content;
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 
     .suggestion {

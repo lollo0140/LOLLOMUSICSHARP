@@ -1,12 +1,10 @@
 import { get, writable } from "svelte/store";
-import { EInvoke } from "../scripts/electronInvoker";
+import { EInvoke, EInvokeJSON } from "../scripts/electronInvoker";
 
-
-export let likedSongs = writable([]);
-export let downloaded = writable([]);
+export let likedSongs = writable(new Set());
+export let downloaded = writable(new Set());
 
 export async function setUpLikedList() {
-
     let content = JSON.parse(
         await window.electron.ipcRenderer.lolloInvoke(
             "getPageData",
@@ -19,76 +17,101 @@ export async function setUpLikedList() {
 }
 
 export async function setLocalSongs() {
-    let savedIds = JSON.parse(
-        await window.electron.ipcRenderer.lolloInvoke("scanDownloaded")
-    );
+    let savedIds = await EInvokeJSON("scanDownloaded");
+    console.log("saved Ids", savedIds);
 
-    downloaded.set(savedIds);
+    downloaded.set(new Set(savedIds));
 }
-
 
 export async function setLikedSongs(likedList) {
-    let idList = likedList.map(Liked => Liked.id)
-    likedSongs.set(idList);
+    let idList = likedList.map(item => item.id);
+    likedSongs.set(new Set(idList));
 }
 
+// --- LIKE MANAGEMENT ---
 
-// LIKE
-// DISLIKE
-// NEUTRAL
-
-
-//like status
 async function LikeSong(id) {
-    await window.electron.ipcRenderer.lolloInvoke("setVideoLike", id, "LIKE");
-    likedSongs.update((ids => [...ids, id]));
+    await EInvoke("setVideoLike", id, "LIKE");
+
+    likedSongs.update(set => {
+        set.add(id);
+        return set;
+    });
 }
 
 async function SetSongNeutral(id) {
-    await window.electron.ipcRenderer.lolloInvoke("setVideoLike", id, "NEUTRAL");
+    await EInvoke("setVideoLike", id, "NEUTRAL");
 
-    likedSongs.update((ids) => {
-
-        let indexElement = ids.indexOf(id);
-
-        if (indexElement !== -1) {
-            ids.splice(indexElement, 1);
-        }
-
-        return ids
-    })
-
+    likedSongs.update(set => {
+        set.delete(id);
+        return set;
+    });
 }
 
 export async function SetVideoLike(id, like) {
-
-    if (id === undefined) {
-        return;
-    }
+    if (!id) return;
 
     console.log(id);
 
     if (like) {
-        LikeSong(id);
+        await LikeSong(id);
     } else {
-        SetSongNeutral(id);
+        await SetSongNeutral(id);
     }
-
 }
 
+// --- DOWNLOAD MANAGEMENT ---
 
-export async function DownloadSong(id, jsonContent) {
+export async function DownloadList(items, concurrency = 3) {
+    const downloadedSet = get(downloaded);
 
-    console.log("downloading: " + id);
+    const queue = items.filter(item => {
+        const itemId = item?.id ?? item;
+        return !downloadedSet.has(itemId);
+    });
 
-    await EInvoke("downloadSong", id, jsonContent)
+    console.log(`Brani totali: ${items.length} | Già presenti: ${items.length - queue.length} | Da scaricare: ${queue.length}`);
 
-    if (get(downloaded).find(x => x === id) != undefined) {
-        downloaded.update(ids => {
+    if (queue.length === 0) return;
 
-            return [...ids].push(id);
-
-        })
+    async function worker() {
+        while (queue.length > 0) {
+            const item = queue.shift();
+            try {
+                await DownloadSong(item);
+            } catch (error) {
+                console.error(`Errore durante il download di ${item?.id ?? item}:`, error);
+            }
+        }
     }
 
+    const workers = Array.from(
+        { length: Math.min(concurrency, queue.length) },
+        () => worker()
+    );
+
+    await Promise.all(workers);
+}
+
+export async function DownloadSong(jsonContent) {
+    const stringified = JSON.stringify(jsonContent);
+    const result = await EInvoke("downloadSong", stringified);
+
+    console.log("result of download", result);
+
+    if (result) {
+        downloaded.update(set => {
+            set.add(jsonContent.id);
+            return set;
+        });
+    }
+}
+
+export async function DeleteLocal(id) {
+    await EInvoke("removeLocal", id);
+
+    downloaded.update(set => {
+        set.delete(id);
+        return set;
+    });
 }

@@ -7,29 +7,6 @@
         <GCLatencyLevel>Interactive</GCLatencyLevel>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <PublishAot>false</PublishAot>
-
-        <PublishReadyToRun>true</PublishReadyToRun>
-
-        <PublishSingleFile>true</PublishSingleFile>
-        <SelfContained>true</SelfContained>
-
-        <PublishTrimmed>true</PublishTrimmed>
-        <TrimMode>partial</TrimMode>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <PublishAot>false</PublishAot>
-
-        <PublishReadyToRun>true</PublishReadyToRun>
-
-        <PublishSingleFile>true</PublishSingleFile>
-        <SelfContained>true</SelfContained>
-
-        <PublishTrimmed>false</PublishTrimmed>
-    </PropertyGroup>
-
     <ItemGroup>
         <PackageReference Include="ElectronNET.API" Version="23.6.2" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
@@ -42,17 +19,12 @@
         </Content>
         <Content Include="preload.js">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="preload.js">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\YTMusicSharp\YTMusicSharp.csproj" />
+        <ProjectReference Include="..\YTMusicSharp\YTMusicSharp.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,6 @@
 <script>
     import { SetPageButtons } from "../mainscreencomponents/UpperBar.svelte";
     import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
-
     import { page } from "$app/state";
     import { onMount } from "svelte";
     import { fly } from "svelte/transition";
@@ -10,12 +9,13 @@
     import { SetPlaylistSave } from "../../scripts/savedElements";
     import { GetPlaylistPage } from "../../scripts/browser";
     import { openPageContextMenu } from "../ContextMenu.svelte";
+    import PlaylistPage from "../../svelte_components/reusable/page/PlaylistPage.svelte";
+    import { DownloadList } from "../../stores/songDataBase";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
 
     let shareButtonText = $state(false);
-
     let contentVisible = $state(true);
 
     export const snapshot = {
@@ -47,99 +47,93 @@
     });
 </script>
 
-{#if content != undefined && contentVisible}
-    <main in:fly={{ y: -50 }}>
-        <PageHeader
-            bgImmage={content.data.thumbnails[content.data.thumbnails.length - 1]}
-            label={"PLAYLIST"}
-        >
-            {#if content?.data?.title}
-                <p class="PL-title">
-                    {(content.data.title ?? "").toUpperCase()}
-                </p>
-            {/if}
+<PlaylistPage {content}>
+    {#if content?.data?.title}
+        <p class="PL-title">
+            {(content.data.title ?? "").toUpperCase()}
+        </p>
+    {/if}
 
-            {#if content?.data?.description}
-                <p class="PL-desc">
-                    {(content.data.description ?? "").toUpperCase()}
-                </p>
-            {/if}
+    {#if content?.data?.description}
+        <p class="PL-desc">
+            {(content.data.description ?? "").toUpperCase()}
+        </p>
+    {/if}
 
-            <div class="PL-subtitles">
-                <p>
-                    {content.data.subtitle.replace("Playlist \u2022 ", "")}
-                </p>
-                <p>{content.data.secondSubtitle}</p>
-            </div>
-
-            <div class="facepile">
-                <div>
-                    {#each content.data.facepile.profileIcons as icons, i}
-                        <img
-                            style="margin-left: {-20 * i}px;"
-                            class="profile-icon"
-                            src={icons}
-                            alt=""
-                        />
-                    {/each}
-                </div>
-            </div>
-
-            <div class="PL-actions">
-                <button
-                    onclick={() => {
-                        if (!content.data.canDelete) {
-                            content.data.saved = !content.data.saved;
-                            SetPlaylistSave(
-                                content.data.playlistId,
-                                content.data.saved
-                            );
-                        }
-                    }}
-                    style={content.data.saved ? "opacity: 1;" : "opacity: 0.3;"}
-                >
-                    <img src="./assets/buttons/bookmark.png" alt="" />
-                </button>
-
-                <button
-                    onclick={() => {
-                        navigator.clipboard
-                            .writeText(content.data.shareLink)
-                            .then(() => {
-                                shareButtonText = true;
-
-                                setTimeout(() => {
-                                    shareButtonText = false;
-                                }, 1300);
-                            });
-                    }}
-                >
-                    <img src="./assets/buttons/share.png" alt="" />
-
-                    {#if shareButtonText}
-                        <p transition:fly={{ x: -10 }}>Share link copied!</p>
-                    {/if}
-                </button>
-
-                <button>
-                    <img src="./assets/buttons/download.png" alt="" />
-                </button>
-
-                <button class="page-menu" onclick={(e) => {openPageContextMenu(e, content, "playlist")}}>
-                    <img src="./assets/buttons/more_options.png" alt="" />
-                </button>
-            </div>
-        </PageHeader>
-
-        <div class="PL-elements">
-            <SongListRenderer content={content.items} playlistId={quary} from={(content.data.title ?? "").toUpperCase()}/>
-        </div>
-    </main>
-{:else}
-    <div style="height: min-content;">
-        <LoadingAnimation />
+    <div class="PL-subtitles">
+        <p>
+            {content.data.subtitle.replace("Playlist \u2022 ", "")}
+        </p>
+        <p>{content.data.secondSubtitle}</p>
     </div>
-{/if}
+
+    <div class="facepile">
+        <div>
+            {#each content.data.facepile.profileIcons as icons, i}
+                <img
+                    style="margin-left: {-20 * i}px;"
+                    class="profile-icon"
+                    src={icons}
+                    alt=""
+                />
+            {/each}
+        </div>
+    </div>
+
+    <div class="PL-actions">
+        <button
+            onclick={() => {
+                if (!content.data.canDelete) {
+                    content.data.saved = !content.data.saved;
+                    SetPlaylistSave(
+                        content.data.playlistId,
+                        content.data.saved,
+                    );
+                }
+            }}
+            style={content.data.saved ? "opacity: 1;" : "opacity: 0.3;"}
+        >
+            <img src="./assets/buttons/bookmark.png" alt="" />
+        </button>
+
+        <button
+            onclick={() => {
+                navigator.clipboard
+                    .writeText(content.data.shareLink)
+                    .then(() => {
+                        shareButtonText = true;
+
+                        setTimeout(() => {
+                            shareButtonText = false;
+                        }, 1300);
+                    });
+            }}
+        >
+            <img src="./assets/buttons/share.png" alt="" />
+
+            {#if shareButtonText}
+                <p transition:fly={{ x: -10 }}>Share link copied!</p>
+            {/if}
+        </button>
+
+        <button
+            onclick={() => {
+                DownloadList(content.items);
+            }}
+        >
+            <img src="./assets/buttons/download.png" alt="" />
+        </button>
+
+        <button
+            class="page-menu"
+            onclick={(e) => {
+                openPageContextMenu(e, content, "playlist");
+            }}
+        >
+            <img src="./assets/buttons/more_options.png" alt="" />
+        </button>
+    </div>
+</PlaylistPage>
 
 <style>
     .PL-actions {
@@ -188,12 +182,8 @@
         margin-right: 3px;
     }
 
-    .PL-elements {
-        margin-top: 5px;
-    }
-
-    main {
-        overflow: hidden;
+    .PL-actions button:hover {
+        transform: translateY(-2px);
     }
 
     .PL-title {

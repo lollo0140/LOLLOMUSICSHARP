@@ -27,6 +27,7 @@
         NextTrack,
         PreviousTrack,
         toggleShuffleMode,
+        loading,
     } from "../audioPlayer/playerStore";
     import {
         playState,
@@ -57,31 +58,43 @@
     });
 
     $effect(() => {
-        if ("mediaSession" in navigator) {
-            navigator.mediaSession.metadata = new MediaMetadata({
-                title: currentSong.title,
-                artist: currentSong.artists.map((x) => x.artistName).join(", "),
-                album: "The Ultimate Collection (Remastered)",
-                artwork: [
-                    {
-                        src: currentSong.thumbnails[0],
-                        sizes: "96x96",
-                        type: "image/png",
-                    },
-                    {
-                        src: currentSong.thumbnails[1],
-                        sizes: "128x128",
-                        type: "image/png",
-                    },
-                ],
-            });
+        if (!$loading) {
+            if ("mediaSession" in navigator) {
 
-            navigator.mediaSession.setActionHandler("previoustrack", () => {
-                PreviousTrack();
-            });
-            navigator.mediaSession.setActionHandler("nexttrack", () => {
-                NextTrack();
-            });
+                let artists = "";
+
+                if (currentSong?.artists) {
+                    artists = currentSong.artists
+                    .map((x) => x.artistName)
+                    .join(", ");
+                }
+
+
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: currentSong.title,
+                    artist: artists,
+                    album: "The Ultimate Collection (Remastered)",
+                    artwork: [
+                        {
+                            src: currentSong?.thumbnails?.[0] ?? "",
+                            sizes: "96x96",
+                            type: "image/png",
+                        },
+                        {
+                            src: currentSong?.thumbnails?.[1] ?? currentSong?.thumbnails?.[0],
+                            sizes: "128x128",
+                            type: "image/png",
+                        },
+                    ],
+                });
+
+                navigator.mediaSession.setActionHandler("previoustrack", () => {
+                    PreviousTrack();
+                });
+                navigator.mediaSession.setActionHandler("nexttrack", () => {
+                    NextTrack();
+                });
+            }
         }
     });
 </script>

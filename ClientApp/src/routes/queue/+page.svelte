@@ -14,7 +14,12 @@
         <p class="from">{$from.toUpperCase()}</p>
     </div>
 
-    <button class="alreadyPlayed" onclick={ () => {alreadPlayed = !alreadPlayed}}>
+    <button
+        class="alreadyPlayed"
+        onclick={() => {
+            alreadPlayed = !alreadPlayed;
+        }}
+    >
         {alreadPlayed ? "HIDE PLAYED" : "SHOW PLAYED"}
     </button>
 
@@ -53,6 +58,8 @@
             {/if}
         {/if}
     {/each}
+
+    <div class="spacer"></div>
 </main>
 
 <style>
@@ -71,7 +78,6 @@
         padding: 10px;
 
         cursor: pointer;
-
     }
 
     .current {
@@ -94,6 +100,17 @@
         opacity: 0.7;
 
         font-weight: 700;
+    }
+
+    main {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 
     .queue-title {

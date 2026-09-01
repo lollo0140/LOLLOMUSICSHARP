@@ -1,11 +1,10 @@
 import { writable } from "svelte/store";
+import { EInvokeJSON } from "../scripts/electronInvoker";
 
 export let settings = writable({});
 
 export async function GetSettings() {
-    settings.set(
-        JSON.parse(await window.electron.ipcRenderer.lolloInvoke("getSettings"))
-    );
+    settings.set(await EInvokeJSON("getSettings"));
 }
 
 const nonLoggedData = {

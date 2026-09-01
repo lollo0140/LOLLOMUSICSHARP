@@ -13,190 +13,23 @@
 
     let content = $state(undefined);
 
-    let filter = $state("all");
+    async function LoadPage() {
+        const [playlists, albums, subscribed] = await Promise.all([
+            EInvokeJSON("getLibraryPlaylists"),
+            EInvokeJSON("getLibraryAlbums"),
+            EInvokeJSON("getLibrarySubscribed"),
+        ]);
 
-    async function OnlyPlaylists() {
-        content = undefined;
-        filter = "playlists";
-
-        const customButtons = [
-            {
-                text: "Playlists",
-                onclick: () => {
-                    SetDefButtonsAndContent();
-                },
-            },
-        ];
-
-        content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke(
-                "getLibraryPlaylists",
-            ),
-        );
-        content = content.Result.items;
-        content.splice(0, 1);
-
-        SetPageButtons(customButtons);
-    }
-
-    async function OnlyAlbums() {
-        content = undefined;
-        filter = "albums";
-
-        const customButtons = [
-            {
-                text: "Albums",
-                onclick: () => {
-                    SetDefButtonsAndContent();
-                },
-            },
-        ];
-
-        content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke("getLibraryAlbums"),
-        );
-        content = content.Result.items;
-
-        SetPageButtons(customButtons);
-    }
-
-    async function OnlyArtists() {
-        content = undefined;
-        filter = "artists";
-
-        const customButtons = [
-            {
-                text: "Artists",
-                onclick: () => {
-                    SetDefButtonsAndContent();
-                },
-            },
-        ];
-
-        content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke(
-                "getLibrarySubscribed",
-            ),
-        );
-        content = content.Result.items;
-
-        SetPageButtons(customButtons);
-    }
-
-    async function OnlySubscribed() {
-        content = undefined;
-        filter = "subscribed";
-
-        const customButtons = [
-            {
-                text: "Subscibed",
-                onclick: () => {
-                    SetDefButtonsAndContent();
-                },
-            },
-        ];
-
-        content = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke(
-                "getLibrarySubscribed",
-            ),
-        );
-
-        content = content.Result.items;
-
-        SetPageButtons(customButtons);
-    }
-
-    async function SetDefButtonsAndContent() {
-        content = undefined;
-        filter = "all";
-
-        const customButtons = [
-            {
-                text: "Playlists",
-                onclick: () => {
-                    OnlyPlaylists();
-                },
-            },
-            {
-                text: "Albums",
-                onclick: () => {
-                    OnlyAlbums();
-                },
-            },
-            {
-                text: "Artists",
-                onclick: () => {
-                    OnlyArtists();
-                },
-            },
-            {
-                text: "Subscribed",
-                onclick: () => {
-                    OnlySubscribed();
-                },
-            },
-        ];
-
-        SetPageButtons(customButtons);
-
-        const saved = JSON.parse(
-            await window.electron.ipcRenderer.lolloInvoke("getSavedYTLibrary"),
-        );
-        content = saved.Result.items;
-
-        console.log("saved content: ");
-        console.log(content);
-
-        if (navigator.onLine) {
-            const lib = JSON.parse(
-                await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
-            );
-            content = lib.Result.items;
-            console.log("online content: ");
-            console.log(content);
-        }
+        content = {
+            playlists,
+            albums,
+            subscribed,
+        };
     }
 
     export async function ReloadLibrary() {
         setTimeout(async () => {
-            content = undefined;
-            const lib = JSON.parse(
-                await window.electron.ipcRenderer.lolloInvoke("getLibraryPage"),
-            );
-
-            filter = "all";
-
-            const customButtons = [
-                {
-                    text: "Playlists",
-                    onclick: () => {
-                        OnlyPlaylists();
-                    },
-                },
-                {
-                    text: "Albums",
-                    onclick: () => {
-                        OnlyAlbums();
-                    },
-                },
-                {
-                    text: "Artists",
-                    onclick: () => {
-                        OnlyArtists();
-                    },
-                },
-                {
-                    text: "Subscribed",
-                    onclick: () => {
-                        OnlySubscribed();
-                    },
-                },
-            ];
-
-            SetPageButtons(customButtons);
-
-            content = lib.Result.items;
+            LoadPage();
         }, 1000);
     }
 </script>
@@ -214,45 +47,102 @@
     let showDownloadedButton = $state();
 
     onMount(async () => {
-        SetDefButtonsAndContent();
-        const _ = (await EInvokeJSON("getDownloaded")) ?? [];
+        await LoadPage();
 
+        //SetDefButtonsAndContent();
+        const _ = (await EInvokeJSON("getDownloaded")) ?? [];
+        console.log("downloaded ids");
+        console.log(_);
         showDownloadedButton = _.length > 0;
     });
 </script>
 
-<p class="page-title">YOUR LIBRARY</p>
+<main>
+    <p class="page-title">YOUR LIBRARY</p>
 
-<div class="lib-content">
-    {#if filter === "all" || filter === "playlists"}
-        <button
-            class="new-playlist"
-            onclick={() => {
-                CreatePlaylist();
-            }}
-        >
-            <div><p>+</p></div>
-        </button>
-
-        {#if showDownloadedButton}
-            <DownloadedSquareButton />
+    <div class="lib-content">
+        {#if content == undefined || content == []}
+            <LoadingAnimation />
         {/if}
-    {/if}
 
-    {#if content == undefined || content == []}
-        <LoadingAnimation />
-    {/if}
+        {#if content != undefined}
+            <p class="label">PLAYLISTS</p>
 
-    {#each content as item, index}
-        {#if item.type != "channel"}
-            <div in:fly={{ y: 8, delay: 20 * (index + 1) }}>
-                <SquareButton content={item} />
+            <div class="content-part">
+                {#if showDownloadedButton}
+                    <DownloadedSquareButton />
+                {/if}
+
+                {#each content.playlists.Result.items as p}
+                    {#if p.type != "none"}
+                        <SquareButton content={p} />
+                    {/if}
+                {/each}
+
+                <button
+                    class="new-playlist"
+                    onclick={() => {
+                        CreatePlaylist();
+                    }}
+                >
+                    <div><p>+</p></div>
+                </button>
             </div>
+
+            {#if content.albums.Result.items.length > 0}
+                <p class="label">ALBUMS</p>
+
+                <div class="content-part">
+                    {#each content.albums.Result.items as a}
+                        <SquareButton content={a} />
+                    {/each}
+                </div>
+            {/if}
+
+            {#if content.subscribed.Result.items.length > 0}
+                <p class="label">SUBSCRIBED</p>
+
+                <div class="content-part">
+                    {#each content.subscribed.Result.items as s}
+                        {#if s.type != "channel"}
+                            <SquareButton content={s} />
+                        {/if}
+                    {/each}
+                </div>
+            {/if}
         {/if}
-    {/each}
-</div>
+    </div>
+
+    <div class="spacer"></div>
+
+</main>
 
 <style>
+    main {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+
+    .content-part {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .label {
+        color: white;
+        font-size: 40px;
+        opacity: 0.7;
+        font-weight: 800;
+
+        margin: 20px;
+    }
+
     .new-playlist {
         background: none;
         border: none;
@@ -305,6 +195,8 @@
 
         display: flex;
         flex-wrap: wrap;
+
+        flex-direction: column;
 
         align-items: start;
         gap: 10px;

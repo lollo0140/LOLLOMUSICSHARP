@@ -64,20 +64,32 @@
 {#if menuVisible}
     <main transition:fade={{ duration: 300 }}>
         <div class="edit-playlist">
-            <input bind:value={name} type="text" placeholder="Playlist name" />
-            <input
-                bind:value={desc}
-                type="text"
-                placeholder="Playlist description"
-            />
+            <p class="secTitle">EDIT PLAYLIST</p>
+            <div class="field">
+                <p>PLAYLIST NAME</p>
+                <input bind:value={name} type="text" placeholder="name" />
+            </div>
 
-            <select bind:value={privacySelector} name="privacy">
-                <option value="PUBLIC">Public</option>
-                <option value="UNLISTED">Unlisted</option>
-                <option value="PRIVATE">Private</option>
-            </select>
+            <div class="field">
+                <p>PLAYLIST DESCRIPTION</p>
+                <input
+                    bind:value={desc}
+                    type="text"
+                    placeholder="description"
+                />
+            </div>
+
+            <div class="field">
+                <p>PLAYLIST PRIVACY</p>
+                <select bind:value={privacySelector} name="privacy">
+                    <option value="PUBLIC">Public</option>
+                    <option value="UNLISTED">Unlisted</option>
+                    <option value="PRIVATE">Private</option>
+                </select>
+            </div>
 
             <button
+                class="send"
                 onclick={() => {
                     onSendButton();
                 }}>{sendButtonText}</button
@@ -96,8 +108,57 @@
 {/if}
 
 <style>
+
+    .secTitle {
+        font-size: 35px;
+        font-weight: 900;
+        margin: 0px;
+
+        margin-top: 10px;
+
+        margin-bottom: 30px;
+    }
+
+    .field {
+        width: 100%;
+
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .field p {
+        margin-bottom: 5px;
+    }
+
+    .field input,
+    select,
+    .send {
+        width: 100%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        padding: 10px;
+        border-radius: 35px;
+        text-wrap: wrap;
+    }
+
+    .send {
+        transition: all 200ms;
+        cursor: pointer;
+    }
+
+    .send:hover {
+        transform: translateY(-5px);
+    }
+
+    .field input {
+        width: calc(100% - 22px);
+    }
+
     .edit-playlist {
         padding: 15px;
+
+
 
         background: black;
         border: rgba(255, 255, 255, 0.3) 1px solid;
@@ -105,7 +166,7 @@
 
         position: absolute;
 
-        width: fit-content;
+        width: 600px;
         height: fit-content;
 
         left: 50%;
@@ -113,6 +174,10 @@
         transform: translate(-50%, -50%);
 
         color: white;
+
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
     }
 
     main {

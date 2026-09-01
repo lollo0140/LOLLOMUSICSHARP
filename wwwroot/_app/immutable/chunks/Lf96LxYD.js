@@ -1,0 +1,1 @@
+import{X as e}from"./D1eG1z4_.js";import"./N6S3lwhu.js";import{a as t}from"./D7cnDP67.js";var n=e({});async function r(){n.set(await t(`getSettings`))}var i={imgUrl:``,name:`Guest`,username:``,logged:!1},a=e(i);async function o(){a.set(i)}export{n as i,a as n,o as r,r as t};

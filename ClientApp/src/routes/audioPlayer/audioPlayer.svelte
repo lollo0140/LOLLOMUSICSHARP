@@ -5,7 +5,7 @@
 
     export function SetPlayerVolume(vol) {
         volume = vol / 100;
-    } 
+    }
 
     export function SetCurrentTimelineSec(sec) {
         player.currentTime = sec;
@@ -23,7 +23,7 @@
 <script>
     import { onMount } from "svelte";
 
-    import { playState, queue, index, NextTrack, repeatValue } from "./playerStore";
+    import { playState, queue, index, NextTrack, repeatValue, loading } from "./playerStore";
     import { SetCurrentTime, SetDurationTime } from "../mainscreencomponents/Controlls.svelte";
 
     let audioSource = $derived.by(() => {
@@ -48,6 +48,7 @@
     }}
 
     onplay={() => {
+        $loading = false;
         SetDurationTime(player.duration)
         $playState = true;
     }}
@@ -57,13 +58,12 @@
 
     autoplay
 
-
-    
+    onloadstart={() => {$loading = true}}
 
     onended={() => {
 
         console.log($repeatValue);
-        
+
 
         if ($repeatValue === 2) {
             player.currentTime = 0;
@@ -72,7 +72,7 @@
             NextTrack();
         }
 
-        
+
     }}
 
     bind:this={player}

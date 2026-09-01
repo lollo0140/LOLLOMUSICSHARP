@@ -4,10 +4,21 @@ import { closeContextMenu, forceCloseMenu } from "../routes/ContextMenu.svelte";
 import { setLocalSongs, setUpLikedList } from "../stores/songDataBase";
 
 export async function SetupLolloMusic() {
-    // 1. Funzione isolata per gestire il login e il caricamento dei dati
+
+    EOn("reloadLogInfo", () => {
+        handleLoginCheck();
+    });
+
     const handleLoginCheck = async () => {
+        console.log("handling log");
+
         try {
+
+
             const logged = await EInvoke("loginYT");
+            console.log(logged);
+
+
 
             if (logged) {
                 const logInfo = await EInvokeJSON("getLogInfo");
@@ -22,25 +33,18 @@ export async function SetupLolloMusic() {
                 accountData.set(logData);
                 console.log("Account caricato:", logData);
 
+                console.log("Loading Liked Songs");
                 await setUpLikedList();
             }
         } catch (error) {
             console.error("Errore durante il controllo del login:", error);
-            await setLocalSongs();
         }
     };
 
-    EOn("reloadLogInfo", () => {
-        handleLoginCheck();
-    });
+    setLocalSongs();
 
-    await handleLoginCheck();
+    handleLoginCheck();
 
-    await GetSettings();
-
-    setTimeout(() => {
-        setLocalSongs();
-    }, 500);
 
     document.addEventListener("click", (e) => {
         closeContextMenu(e);

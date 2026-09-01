@@ -12,7 +12,10 @@
 
 <div class="content">
     <div class="app-content">
-        <div style="{ currentTrack === undefined ? "right: 0px;" : ""}" class="app-navigator lollo-appstyle-DivContainer">
+        <div
+            style={currentTrack === undefined ? "right: 0px;" : ""}
+            class="app-navigator lollo-appstyle-DivContainer"
+        >
             <nav
                 class="lollo-appstyle-DivContainer"
                 style="border-radius: 23px;"
@@ -21,7 +24,7 @@
             </nav>
 
             <div class="upper-bar">
-                <UpperBar />
+
             </div>
 
             <div class="content-renderer lollo-appstyle-DivContainer">
@@ -30,7 +33,10 @@
         </div>
 
         {#if currentTrack}
-            <div transition:fly={{x:200}} class="display lollo-appstyle-DivContainer">
+            <div
+                transition:fly={{ x: 200 }}
+                class="display lollo-appstyle-DivContainer"
+            >
                 <PlayerDisplay />
             </div>
         {/if}
@@ -52,14 +58,14 @@
         position: absolute;
 
         left: 73px;
-        top: 56px;
+        top: 0px;
         bottom: 8px;
         right: 8px;
 
         background: transparent;
         border: transparent;
 
-        overflow: scroll;
+        overflow: hidden;
         overflow-x: hidden;
     }
 
@@ -81,7 +87,7 @@
         width: 306px;
 
         right: 0px;
-        top: 55px;
+        top: 0px;
         bottom: 0px;
 
         border-radius: 25px;
@@ -118,7 +124,7 @@
 
         left: 15px;
         right: 15px;
-        top: 15px;
+        top: 65px;
         bottom: 15px;
 
         opacity: 1;

@@ -1,1 +1,0 @@
-import{C as e,x as t}from"../chunks/CxHjRy6F.js";import"../chunks/xihTtKlq.js";import"../chunks/D2m3UxeA.js";var n=e(`<p>loading new page</p>`);function r(e){t(e,n())}export{r as component};

@@ -2,26 +2,12 @@
     import { GetDefPng } from "../../scripts/defPngManager.js";
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import { onMount } from "svelte";
-    import { likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
+    import { downloaded, likedSongs, SetVideoLike } from "../../stores/songDataBase.js";
     import { openContextMenu } from "../ContextMenu.svelte";
 
-    let Liked = $derived.by(() => {
-        if (content === undefined) {
-            return false;
-        }
+    let Liked = $derived($likedSongs.has(content.id));
 
-        if (content.type === "video" || content.type === "track") {
-            let itemfound = $likedSongs.find((id) => content.id === id);
-
-            if (itemfound != undefined) {
-                return true;
-            }
-        }
-
-        return false;
-    });
-
-    let IsLocal = false;
+    let IsLocal = $derived($downloaded.has(content.id));
 
     let { content, onclick } = $props();
 
@@ -80,6 +66,8 @@
             class={content.type === "video" ? "videoImg" : ""}
             src={imgurl}
             alt=""
+            decoding="async"
+            loading="lazy"
             onerror={() => {
                 SetDefault();
             }}
@@ -362,10 +350,7 @@
 
     .button:hover {
         transform: translateX(5px);
-
         background: rgba(255, 255, 255, 0.1);
-        box-shadow: 0px 10px 30px 10px rgba(0, 0, 0, 0.2);
-
         z-index: 2;
     }
 

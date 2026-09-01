@@ -121,10 +121,10 @@
         position: absolute;
         z-index: 99;
 
-        left: 97px;
-        top: 47px;
+        left: 266px;
+        top: 67px;
 
-        width: 302px;
+        width: 300px;
         min-height: 200px;
 
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -164,7 +164,7 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
 
-        height: 40px;
+        height: 35px;
         width: 300px;
 
         border-radius: 30px;
@@ -173,6 +173,8 @@
 
         display: flex;
         justify-content: end;
+
+        app-region: no-drag;
     }
 
 
@@ -183,7 +185,7 @@
         position: relative;
 
         left: 5px;
-        top: 5px;
+        top: 2px;
         bottom: 5px;
         right: 30px;
 
@@ -211,8 +213,8 @@
     button {
         position: relative;
 
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         padding: 0px;
 
         border: none;

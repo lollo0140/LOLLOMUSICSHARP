@@ -3,220 +3,208 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.IO;
-
-using ElectronNET.API;
-using ElectronNET.API.Entities;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Text.Json.Nodes;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using ElectronNET.API;
+using ElectronNET.API.Entities;
 using YoutubeMusic;
 using System.Drawing;
+using LOLLOMUSICX;
 
 class Program
 {
+    public static YTMusicSharp yTMusicClient;
+    public static string userSessionJSON = Path.Combine(AppContext.BaseDirectory, "session.json");
+    public static string cachedVideosPath = Path.Combine(AppContext.BaseDirectory, "cached");
+    public static string settingsJSONPath = Path.Combine(AppContext.BaseDirectory, "settings.json");
+    public static string downloadPAth = Path.Combine(AppContext.BaseDirectory, "download");
+    public static string JSONDownloadsPath = Path.Combine(AppContext.BaseDirectory, "downloaded.json");
+
+    private static void PreAppOperations()
+    {
+
+        if (!Directory.Exists(cachedVideosPath)) Directory.CreateDirectory(cachedVideosPath);
+        if (!Directory.Exists(downloadPAth)) Directory.CreateDirectory(downloadPAth);
+
+        if (File.Exists(userSessionJSON))
+            yTMusicClient = new((JsonObject)JsonNode.Parse(File.ReadAllText(userSessionJSON)));
+        else
+            yTMusicClient = new();
+
+        CreateSettingsFile();
+
+        if (File.Exists(settingsJSONPath))
+        {
+            JsonObject settings = (JsonObject)JsonNode.Parse(File.ReadAllText(settingsJSONPath));
+            if (settings["localData"]?["downloadPath"]?.GetValue<string>() != "none")
+                downloadPAth = settings["localData"]["downloadPath"].GetValue<string>();
+        }
+
+        Utility.ValidateDownloaded();
+    }
 
     public static void Main(string[] args)
     {
+        PreAppOperations();
+
         var builder = WebApplication.CreateBuilder(args);
-
-        // Aggiungi il supporto per i controller API (se ti servono)
         builder.Services.AddControllers();
-
-        // Configura Electron
         builder.WebHost.UseElectron(args);
-
-        builder.Services.AddSingleton<IpcMain.AudioHandler>();
 
         var app = builder.Build();
 
-
-        app.MapGet("/api/audio/{id}", async (string id, IpcMain.AudioHandler handler) =>
+        app.MapGet("/api/audio/{id}", async (string id) =>
         {
-
-
-            var settingsFilePath = JsonNode.Parse(File.ReadAllText(Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json")));
-
-
-            string dowPath = handler.GetYTClient().downloadPath;
-
-            string? pathFromSettings = settingsFilePath?["localData"]?["downloadPath"].GetValue<string>() ?? null;
-
-            if (pathFromSettings != null && pathFromSettings != "none")
+            try
             {
-                string P = Path.Join(pathFromSettings, $"{id}.webm");
-
-                if (File.Exists(P))
+                if (Utility.IsVideoLocal(id))
                 {
-                    return Results.File(P, contentType: "audio/webm", enableRangeProcessing: true);
+                    string localPath = Utility.GetLocalStreamingPath(id);
+                    return Results.File(localPath, contentType: "audio/webm", enableRangeProcessing: true);
                 }
+
+                string P = Path.Combine(cachedVideosPath, $"{id}.webm");
+
+                if (!File.Exists(P))
+                {
+                    await yTMusicClient.DownloadVideoById(id, P);
+                }
+
+                return Results.File(P, contentType: "audio/webm", enableRangeProcessing: true);
             }
-
-
-
-            string? path = await handler.GetAudioData(id);
-            if (path == null) return Results.NotFound();
-
-            return Results.File(path, contentType: "audio/webm", enableRangeProcessing: true);
+            catch
+            {
+                return Results.Problem($"Error while loading video: {id}");
+            }
         });
 
         app.UseDefaultFiles();
         app.UseStaticFiles();
-
         app.UseRouting();
         app.UseAuthorization();
-
         app.MapControllers();
 
         if (HybridSupport.IsElectronActive)
         {
-            Electron.App.CommandLine.AppendSwitch("disable-gpu");
-            Electron.App.CommandLine.AppendSwitch("disable-gpu-compositing");
+            Electron.App.CommandLine.AppendSwitch("enable-gpu-rasterization");
+            Electron.App.CommandLine.AppendSwitch("enable-zero-copy");
 
-            if (!app.Environment.IsDevelopment())
+            app.Lifetime.ApplicationStarted.Register(() =>
             {
-                Electron.App.CommandLine.AppendSwitch("js-flags", "--max-old-space-size=128");
-                Electron.App.CommandLine.AppendSwitch("disable-renderer-backgrounding");
-                Electron.App.CommandLine.AppendSwitch("renderer-process-limit", "1");
-                Electron.App.CommandLine.AppendSwitch("disk-cache-size", "20971520");
-                Electron.App.CommandLine.AppendSwitch("disable-extensions");
-            }
-
-
-
-            CreateElectronWindow(app);
+                Task.Run(async () => await CreateElectronWindowAsync(app));
+            });
         }
 
-        createSettingsFile();
-
         app.Run();
-
     }
 
     static void CreateTray(WebApplication app, BrowserWindow window)
     {
 #if WINDOWS
-        Electron.App.Ready += async () =>
+        var menuItems = new MenuItem[]
         {
-            // 1. Crea la finestra principale
-            var window = await Electron.WindowManager.CreateWindowAsync();
-
-            // 2. Definisci gli elementi del menu contestuale (tasto destro)
-            var menuItems = new MenuItem[]
-            {
-                new MenuItem
-                {
-                    Label = "Mostra App",
-                    Click = () => window.Show()
-                },
-                new MenuItem
-                {
-                    Label = "Nascondi",
-                    Click = () => window.Hide()
-                },
-                new MenuItem
-                {
-                    Type = MenuType.separator
-                },
-                new MenuItem
-                {
-                    Label = "Esci",
-                    Click = () => Electron.App.Quit()
-                }
-            };
-
-            // 3. Inizializza l'icona e il tooltip della Tray
-            // Nota: Il percorso dell'icona parte dalla root della directory di output del progetto
-            string iconPath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "Icon.png");
-
-            await Electron.Tray.Show(iconPath, menuItems);
-            await Electron.Tray.SetToolTip("La mia App .NET con Electron");
-
+            new MenuItem { Label = "Mostra App", Click = () => window.Show() },
+            new MenuItem { Label = "Nascondi", Click = () => window.Hide() },
+            new MenuItem { Type = MenuType.separator },
+            new MenuItem { Label = "Esci", Click = () => Electron.App.Quit() }
         };
 
-
+        string iconPath = Path.Combine(AppContext.BaseDirectory, "Icon.png");
+        if (File.Exists(iconPath))
+        {
+            Task.Run(async () =>
+            {
+                await Electron.Tray.Show(iconPath, menuItems);
+                await Electron.Tray.SetToolTip("LOLLOMUSICX");
+            });
+        }
 #endif
     }
 
-    static void createSettingsFile()
+    static void CreateSettingsFile()
     {
-        string settingsFilePath = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "settings.json");
-
-        if (!File.Exists(settingsFilePath))
+        if (!File.Exists(settingsJSONPath))
         {
-            JsonObject settings = new JsonObject
+            JsonObject settings = new()
             {
+                ["appearence"] = new JsonObject
+                {
+                    ["winStyle"] = "float"
+                },
                 ["localData"] = new JsonObject
                 {
                     ["downloadPath"] = "none"
                 }
             };
 
-            File.WriteAllText(settingsFilePath, JsonSerializer.Serialize(settings));
-
+            Utility.WriteJsonFile(settingsJSONPath, settings);
         }
-
-
-
     }
 
-    static async void CreateElectronWindow(WebApplication app)
+    static async Task CreateElectronWindowAsync(WebApplication app)
     {
-
-
-        string preloadPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "preload.js");
-
+        string preloadPath = Path.Combine(AppContext.BaseDirectory, "preload.js");
         if (!File.Exists(preloadPath))
         {
             preloadPath = Path.Combine(Directory.GetCurrentDirectory(), "preload.js");
         }
 
+        var settings = Utility.ReadJsonObject(settingsJSONPath);
 
+        bool isPill = settings["appearence"]["winStyle"].GetValue<string>().Equals("pill");
 
         var options = new BrowserWindowOptions
         {
+            Title = "LOLLOMUSICX",
             Frame = false,
-            Show = false,
-            Transparent = true,
-            Resizable = false,
+            AutoHideMenuBar = true,
+            Show = true,
+            Transparent = isPill,
+            BackgroundColor = isPill ? "#00000000" : "black",
+            Resizable = !isPill,
             Movable = true,
-            SkipTaskbar = true,
-            AlwaysOnTop = true,
+            MinHeight = isPill ? 0 : 750,
+            MinWidth = isPill ? 0 : 1400,
+            SkipTaskbar = !isPill,
+            AlwaysOnTop = isPill,
+            Icon = Path.Combine(AppContext.BaseDirectory, "wwwroot", "Icon.png"),
             WebPreferences = new WebPreferences
             {
                 ContextIsolation = true,
                 NodeIntegration = false,
-                BackgroundThrottling = true,
+                BackgroundThrottling = false,
                 Offscreen = false,
                 Preload = preloadPath
             }
         };
 
-        var Window = await Electron.WindowManager.CreateWindowAsync(options);
+        var window = await Electron.WindowManager.CreateWindowAsync(options);
 
+        _ = IpcMain.RegisterEvents(window);
+        IpcMain.RegisterHandlers(window);
 
-        _ = IpcMain.RegisterEvents(Window);
-        IpcMain.RegisterHandlers(Window);
+        window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
 
+        // DEBUG ONLY, comment this line in release
+        //window.LoadURL("http://localhost:5173/");
 
-        Window.LoadURL("http://localhost:5173/");
-        //Window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
+        string shortcut = "CommandOrControl+Shift+M";
 
-
-        Window.OnMinimize += async () =>
+        Electron.GlobalShortcut.Register(shortcut, async () =>
         {
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
-        };
+            if (!isPill) return;
 
-        CreateTray(app, Window);
+            System.Console.WriteLine("Shortcut attivato!");
 
-        Window.OnReadyToShow += () => Window.Show();
+            await IpcMain.SetWinHide(window, false);
 
-        FlyoutWindow.setWinOpenedPosition(Window);
+            Electron.IpcMain.Send(window, "showWin");
+        });
+
+        CreateTray(app, window);
+
+        if (isPill) FlyoutWindow.setWinOpenedPosition(window);
     }
-
-
-
-
 }

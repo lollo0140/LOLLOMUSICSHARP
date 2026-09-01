@@ -84,10 +84,12 @@
     }
 
     button {
+
+        app-region: no-drag;
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
-        height: 42px;
-        width: 42px;
+        height: 35px;
+        width: 35px;
 
         border-radius: 30px;
 

@@ -1,10 +1,17 @@
 <script>
+    import { fade } from "svelte/transition";
     import {
         NavigateToAlbum,
         NavigateToArtist,
     } from "../../scripts/navigationScript";
+    import LoadingAnimation from "../../svelte_components/reusable/LoadingAnimation.svelte";
     import NextUpPannel from "../../svelte_components/single/NextUpPannel.svelte";
-    import { queue, index, playState } from "../audioPlayer/playerStore.js";
+    import {
+        queue,
+        index,
+        playState,
+        loading,
+    } from "../audioPlayer/playerStore.js";
 
     let currentSongImmage = $derived.by(() => {
         if (!currentSong?.thumbnails || currentSong.thumbnails.length === 0) {
@@ -43,6 +50,14 @@
 {#if currentSong != undefined}
     <main>
         <div class="current">
+            {#if $loading}
+                <div transition:fade class="loading-div">
+                    <div>
+                        <LoadingAnimation />
+                    </div>
+                </div>
+            {/if}
+
             <img
                 class="currentImg"
                 onerror={(e) => {
@@ -95,6 +110,25 @@
 {/if}
 
 <style>
+    .loading-div {
+
+        border: 1px rgba(255, 255, 255, 0.1) solid;
+        border-radius: 15px;
+
+        position: absolute;
+
+        width: 284px;
+        height: 288px;
+
+        overflow: hidden;
+    }
+
+    .loading-div div {
+        width: 284px;
+        height: 288px;
+        transform: scale(3);
+    }
+
     .current {
         display: flex;
         flex-direction: column;

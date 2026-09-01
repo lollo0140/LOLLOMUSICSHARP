@@ -61,85 +61,94 @@
     });
 </script>
 
-{#if content != undefined && contentVisible}
-    <div in:fly={{ y: -50 }}>
-        <PageHeader bgImmage={imgSrc} label={"ARTIST"}>
-            <div class="artist-info">
+<main>
+    {#if content != undefined && contentVisible}
+        <div in:fly={{ y: -50 }}>
+            <PageHeader bgImmage={imgSrc} label={"ARTIST"}>
+                <div class="artist-info">
+                    <div>
+                        <p class="type"></p>
+
+                        <p class="title">
+                            {content.header.headerTitle.toUpperCase()}
+                        </p>
+
+                        <div class="stats">
+                            {#if content.header.subscribeCount != "0"}
+                                <p class="subscribe-count">
+                                    {content.header.subscribeCount} SUBSCRIBED
+                                </p>
+                            {/if}
+                            {#if content.header.listenersCount != "no data"}
+                                <p class="streams">
+                                    {content.header.listenersCount.toUpperCase()}
+                                </p>
+                            {/if}
+                        </div>
+                    </div>
+
+                    <div class="PL-actions">
+                        <button
+                            style=" {subscribed
+                                ? 'color: black; background: white;'
+                                : ''}"
+                            class="sub-button"
+                            onclick={() => {
+                                SetArtistSubscribe(quary, !subscribed);
+                                subscribed = !subscribed;
+                            }}
+                        >
+                            {subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
+                        </button>
+                    </div>
+                </div>
+            </PageHeader>
+
+            <div class="sections">
+                {#each content.sections as sec}
+                    <div class="sec">
+                        <p class="sec-title">{sec.title}</p>
+
+                        <div class="sec-content">
+                            {#if sec.items[0].type === "track" || sec.items[0].type === "video"}
+                                <SongListRenderer
+                                    content={sec.items}
+                                    from={content.header.headerTitle +
+                                        ": popular songs"}
+                                />
+                            {:else}
+                                {#each sec.items as item}
+                                    <SquareButton content={item} />
+                                {/each}
+                            {/if}
+                        </div>
+                    </div>
+                {/each}
+            </div>
+
+            {#if content.header.headerDescription && content.header.headerDescription != ")"}
                 <div>
-                    <p class="type"></p>
+                    <p class="sec-title">About {content.header.headerTitle}</p>
 
-                    <p class="title">
-                        {content.header.headerTitle.toUpperCase()}
-                    </p>
-
-                    <div class="stats">
-                        {#if content.header.subscribeCount != "0"}
-                            <p class="subscribe-count">
-                                {content.header.subscribeCount} SUBSCRIBED
-                            </p>
-                        {/if}
-                        {#if content.header.listenersCount != "no data"}
-                            <p class="streams">
-                                {content.header.listenersCount.toUpperCase()}
-                            </p>
-                        {/if}
+                    <div style="margin: 20px;">
+                        <p
+                            style="color: white; font-size: 18px; line-height: 20px; opacity: 0.7; font-weight: 500;"
+                        >
+                            {@html artistDescription}
+                        </p>
                     </div>
                 </div>
+            {/if}
 
-                <div class="PL-actions">
-                    <button
-                        style=" {subscribed
-                            ? 'color: black; background: white;'
-                            : ''}"
-                        class="sub-button"
-                        onclick={() => {
-                            SetArtistSubscribe(quary, !subscribed);
-                            subscribed = !subscribed;
-                        }}
-                    >
-                        {subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
-                    </button>
-                </div>
-            </div>
-        </PageHeader>
-
-        <div class="sections">
-            {#each content.sections as sec}
-                <div class="sec">
-                    <p class="sec-title">{sec.title}</p>
-
-                    <div class="sec-content">
-                        {#if sec.items[0].type === "track" || sec.items[0].type === "video"}
-                            <SongListRenderer content={sec.items} from={content.header.headerTitle + ": popular songs"}/>
-                        {:else}
-                            {#each sec.items as item}
-                                <SquareButton content={item} />
-                            {/each}
-                        {/if}
-                    </div>
-                </div>
-            {/each}
+            <div class="spacer"></div>
         </div>
+    {:else}
+        <div style="height: min-content;">
+            <LoadingAnimation />
+        </div>
+    {/if}
 
-        {#if content.header.headerDescription && content.header.headerDescription != ")"}
-            <div>
-                <p class="sec-title">About {content.header.headerTitle}</p>
-
-                <div style="margin: 20px;">
-                    <p
-                        style="color: white; font-size: 18px; line-height: 20px; opacity: 0.7; font-weight: 500;"
-                    >
-                        {@html artistDescription}
-                    </p>
-                </div>
-            </div>
-        {/if}
-    </div>
-{:else}
-    <div style="height: min-content;">
-        <LoadingAnimation />
-    </div>
-{/if}
+</main>
 
 <style>
     .PL-actions {
@@ -210,7 +219,6 @@
     }
 
     .title {
-
         max-width: 300px;
 
         font-size: 120px;
@@ -249,5 +257,16 @@
 
         justify-items: center;
         align-items: start;
+    }
+
+    main {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+        left: 0px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 </style>

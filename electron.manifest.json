@@ -10,6 +10,7 @@
   "build": {
     "appId": "com.LOLLOMUSICX.app",
     "productName": "LOLLOMUSICX",
+    "icon": "wwwroot/Icon.png",
     "copyright": "Copyright © 2020",
     "buildVersion": "1.0.0",
     "compression": "maximum",

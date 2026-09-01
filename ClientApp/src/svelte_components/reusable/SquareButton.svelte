@@ -35,12 +35,17 @@
     }
 </script>
 
-<button {onclick} oncontextmenu={ (e) => {
-    e.preventDefault();
-    openContextMenu(e, content)
-}}>
+<button
+    {onclick}
+    oncontextmenu={(e) => {
+        e.preventDefault();
+        openContextMenu(e, content);
+    }}
+>
     <div class="Bcontent">
         <img
+            decoding="async"
+            loading="lazy"
             bind:this={immage}
             onerror={() => {
                 imgError();
@@ -74,7 +79,6 @@
             <p class="subtitle">{content.type.toUpperCase()}</p>
 
             {#if content.artists}
-
                 <p class="dot-divider">•</p>
 
                 <!-- svelte-ignore node_invalid_placement_ssr -->
@@ -95,7 +99,6 @@
 </button>
 
 <style>
-
     .link {
         text-align: start;
     }
@@ -120,14 +123,12 @@
     }
 
     button {
-
         position: relative;
 
         color: white;
         background: none;
         border: none;
         margin: 5px;
-
 
         cursor: pointer;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -138,7 +139,6 @@
     }
 
     .title {
-
         text-align: start;
 
         margin: 0px;
@@ -159,7 +159,6 @@
     }
 
     .subtitle-div {
-
         display: flex;
         align-items: center;
 
@@ -169,8 +168,6 @@
         font-size: 15px;
 
         text-align: start;
-
-
 
         height: 17px;
         width: 155px;
@@ -187,7 +184,6 @@
     }
 
     .subtitle-div button {
-
         margin: 0px;
 
         padding: 0px;
@@ -203,5 +199,4 @@
         text-decoration: underline;
         font-weight: 900;
     }
-
 </style>

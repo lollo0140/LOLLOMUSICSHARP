@@ -1,8 +1,8 @@
 <script>
-    let { label = "none", children } = $props();
+    let { label = "none", children, column = false } = $props();
 </script>
 
-<div class="optionButton">
+<div class="optionButton" style="flex-direction: {column ? 'column' : 'row'};">
     <p class="label">{label}:</p>
 
     <div class="content">{@render children()}</div>

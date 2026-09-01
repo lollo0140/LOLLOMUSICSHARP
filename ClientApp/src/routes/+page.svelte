@@ -43,21 +43,39 @@
     });
 </script>
 
-<p class="page-title">HOME</p>
+<main>
+    <p class="page-title">HOME</p>
 
-<div class="home-content">
-    {#if content == undefined}
-        <LoadingAnimation />
-    {/if}
+    <div class="home-content">
+        {#if content == undefined}
+            <LoadingAnimation />
+        {/if}
 
-    {#each content as section, i}
-        <div in:fly={{ y: -20, delay: 100 * i }} style="width: 100%;">
-            <HomeSection content={section} />
-        </div>
-    {/each}
-</div>
+        {#each content as section, i}
+            <div in:fly={{ y: -20, delay: 100 * i }} style="width: 100%;">
+                <HomeSection content={section} />
+            </div>
+        {/each}
+    </div>
+
+    <div class="spacer"></div>
+</main>
 
 <style>
+
+    main {
+
+        position: absolute;
+
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+
     .home-content {
         margin: 0px;
         height: fit-content;

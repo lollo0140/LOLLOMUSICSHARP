@@ -8,7 +8,6 @@
     let imgSrc = $state();
 
     onMount(() => {
-        console.log(content);
         imgSrc = content.thumbnails[0];
     });
 </script>
@@ -23,7 +22,10 @@
 
 <style>
     button {
-        width: 55px;
+
+        margin-left: -2px;
+
+        width: 56px;
         height: 50px;
 
         border: none;

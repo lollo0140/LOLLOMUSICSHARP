@@ -72,11 +72,8 @@
     .loginDivClosed {
         display: flex;
 
-        position: absolute;
         z-index: 2;
 
-        right: 146px;
-        top: 15px;
 
         width: 175px;
         height: 35px;
@@ -94,11 +91,9 @@
     .loginDivOpen {
         display: flex;
 
-        position: absolute;
+
         z-index: 2;
 
-        right: 146px;
-        top: 15px;
 
         width: auto;
         height: 70px;

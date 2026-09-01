@@ -14,6 +14,21 @@
     let opened = $state(false);
 
     let fullscreen = $state(false);
+
+    export async function ChangeWinState() {
+        if (fullscreen) {
+            await WinStateToFullscreen(false);
+            fullscreen = false;
+        }
+
+        if (!opened) {
+            WinStateToOpen();
+            opened = true;
+        } else {
+            WinStateToPill();
+            opened = false;
+        }
+    }
 </script>
 
 <script>
@@ -33,34 +48,52 @@
     import Background from "../svelte_components/single/background.svelte";
     import ContextMenu from "./ContextMenu.svelte";
     import LogISection from "./mainscreencomponents/LogISection.svelte";
+    import { GetSettings, settings } from "../stores/settingsStore.js";
+    import WindowControlls from "./mainscreencomponents/WindowControlls.svelte";
 
     let currentSong = $derived.by(() => {
         return $queue[$index] ?? undefined;
     });
 
-    async function ChangeWinState() {
-        if (fullscreen) {
-            await WinStateToFullscreen(false);
-            fullscreen = false;
-        }
-
-        if (!opened) {
-            WinStateToOpen();
-            opened = true;
-        } else {
-            WinStateToPill();
-            opened = false;
-        }
-    }
-
     onMount(async () => {
         EOn("showWin", async () => {
+            $settings.appearence.winStyle === "pill";
             ChangeWinState();
         });
 
-        WinStateToPill();
+        await GetSettings();
 
-        SetupLolloMusic();
+        await SetupLolloMusic();
+
+        if ($settings.appearence.winStyle === "pill") {
+            console.log("pill");
+
+            WinStateToPill();
+        } else {
+            gsap.to(".MainTag", {
+                left: 0,
+                top: 0,
+                bottom: 0,
+                right: 0,
+                height: "auto",
+                transform: "",
+                borderRadius: 0,
+                border: "none",
+            });
+
+            gsap.to(".bg-wrapper", {
+                borderRadius: 0,
+            });
+
+            opened = true;
+
+            console.log("float");
+
+            if (!fullscreen) {
+                WinStateToFullscreen();
+            }
+
+        }
     });
 
     let { children } = $props();
@@ -75,7 +108,7 @@
     }}
 ></div>
 
-<main class="MainTag">
+<main class="MainTag" style="overflow: hidden;">
     {#if opened}
         <div in:fade class="contentAnimator">
             <AppContent>
@@ -85,45 +118,7 @@
             <AddToPlaylistMenu />
             <EditPLaylistMenu />
 
-            <LogISection/>
-
-            <div class="window-buttons">
-
-
-                <button
-                    onclick={() => {
-                        ChangeWinState();
-                    }}
-
-                    ><img
-                        src="./assets/windowbuttons/minimize.png"
-                        alt=""
-                    /></button
-                >
-
-                <button
-                    onclick={() => {
-                        WinStateToFullscreen(!fullscreen);
-                        fullscreen = !fullscreen;
-                    }}
-                >
-                    <img
-                        style="width: 19px;"
-                        src={fullscreen
-                            ? "./assets/windowbuttons/close_fullscreen.png"
-                            : "./assets/windowbuttons/open_in_full.png"}
-                        alt=""
-                    />
-                </button>
-
-                <button onclick={() => {
-
-                    ESend("setHideWinValue", true);
-
-                    }}>
-                    <img style="height: 17px; width: 17px;" src="./assets/windowbuttons/close.png" alt="" />
-                </button>
-            </div>
+            <WindowControlls {fullscreen} />
         </div>
     {:else}
         <div in:fade class="contentAnimator">
@@ -136,7 +131,12 @@
 </main>
 
 {#if opened && currentSong != undefined}
-    <div class="controllsWrapper" transition:fly={{ y: -20 }}>
+    <div
+        class={$settings.appearence.winStyle === "pill"
+            ? "controllsWrapperPill"
+            : "controllsWrapperFloat"}
+        transition:fly={{ y: -20 }}
+    >
         <Controlls />
         <Background />
     </div>
@@ -150,56 +150,7 @@
     :global(body) {
         background: transparent;
     }
-
-    .window-buttons {
-        background: rgba(255, 255, 255, 0.05);
-        border: solid rgba(255, 255, 255, 0.1) 1px;
-        border-radius: 40px;
-
-        backdrop-filter: blur(10px);
-
-        position: absolute;
-
-        right: 15px;
-        top: 15px;
-
-        display: flex;
-        flex-direction: row;
-
-        gap: 5px;
-
-    }
-
-    .window-buttons button {
-        background: transparent;
-        border: none;
-
-        color: white;
-
-        cursor: pointer;
-
-        width: 35px;
-        height: 35px;
-
-        display: flex;
-        align-items: center;
-        justify-content: center;
-
-        opacity: 0.5;
-    }
-
-    .window-buttons button:hover {
-        opacity: 1;
-    }
-
-    .window-buttons button img
-    {
-        width: 20px;
-        height: 20px;
-    }
-
-
-    .controllsWrapper {
+    .controllsWrapperPill {
         position: absolute;
 
         z-index: 2;
@@ -213,6 +164,24 @@
         right: 300px;
 
         background: rgba(0, 0, 0, 0.98);
+        border: solid rgba(255, 255, 255, 0.3) 1px;
+    }
+
+    .controllsWrapperFloat {
+        position: absolute;
+
+        z-index: 2;
+
+        height: 65px;
+
+        border-radius: 45px;
+
+        bottom: 46px;
+        left: 99px;
+        right: 375px;
+
+        background: rgba(0, 0, 0, 0.98);
+        box-shadow: 0px 0px 50px 0px black;
         border: solid rgba(255, 255, 255, 0.3) 1px;
     }
 
@@ -241,6 +210,8 @@
     }
 
     .contentAnimator {
+        overflow: hidden;
+
         width: 100%;
         height: 100%;
 
