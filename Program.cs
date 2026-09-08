@@ -167,7 +167,9 @@ class Program
             Movable = true,
             MinHeight = isPill ? 0 : 750,
             MinWidth = isPill ? 0 : 1400,
-            SkipTaskbar = !isPill,
+            Height = isPill ? 0 : 750,
+            Width = isPill ? 0 : 1400,
+            SkipTaskbar = isPill,
             AlwaysOnTop = isPill,
             Icon = Path.Combine(AppContext.BaseDirectory, "wwwroot", "Icon.png"),
             WebPreferences = new WebPreferences
