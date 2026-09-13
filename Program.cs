@@ -215,10 +215,10 @@ class Program
         _ = IpcMain.RegisterEvents(window);
         IpcMain.RegisterHandlers(window);
 
-        window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
+        //window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
 
         // DEBUG ONLY, comment this line in release
-        //window.LoadURL("http://localhost:5173/");
+        window.LoadURL("http://localhost:5173/");
 
         string shortcut = "CommandOrControl+Shift+M";
 

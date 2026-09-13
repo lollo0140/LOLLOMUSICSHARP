@@ -63,7 +63,7 @@
     </div>
 
     <button class="page-button" onclick={() => NavigateTo("/settings")}>
-        settings
+        <img src="/assets/navbar/settings.png" alt="" />
     </button>
 </main>
 
@@ -72,7 +72,7 @@
         position: absolute;
 
         top: 250px;
-        bottom: 50px;
+        bottom: 55px;
 
         width: 100%;
 
