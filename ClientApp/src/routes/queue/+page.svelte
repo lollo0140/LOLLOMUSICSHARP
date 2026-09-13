@@ -32,7 +32,7 @@
                         $index = i;
                     }}
                     content={song}
-                    index={i}
+                    elIndex={i}
                 />
             </div>
         {:else if i > $index}
@@ -52,7 +52,7 @@
                             $index = i;
                         }}
                         content={song}
-                        index={i}
+                        elIndex={i}
                     />
                 </div>
             {/if}

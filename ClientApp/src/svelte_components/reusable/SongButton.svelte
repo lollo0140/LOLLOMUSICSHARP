@@ -9,11 +9,12 @@
         SetVideoLike,
     } from "../../stores/songDataBase.js";
     import { openContextMenu } from "../../routes/ContextMenu.svelte";
+    import { queue, index } from "../../routes/audioPlayer/playerStore";
 
     let {
         onclick,
         content,
-        index,
+        elIndex,
         renderPhoto = true,
         fatherId = undefined,
     } = $props();
@@ -39,7 +40,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="button"
+    class="button {($queue?.[$index]?.id ?? "") === content.id ? 'active' : ''}"
     oncontextmenu={(e) => {
         e.preventDefault();
         openContextMenu(e, content, false);
@@ -51,7 +52,7 @@
         {#if renderPhoto}
             <img
                 class={content.type === "video" ? "videoImg" : ""}
-                src={imgurl.replace("w60-h60-l90-rj", "w30-h30-l90-rj").replace("w120-h120-l90-rj", "w30-h30-l90-rj")}
+                src={`http://localhost:8001/api/img/30/${imgurl.replace("https://yt3.googleusercontent.com/", "")}`}
                 alt=""
                 decoding="async"
                 loading="lazy"
@@ -124,7 +125,7 @@
 
                 <p style="pointer-events: none;">•</p>
                 <p style="pointer-events: none;" class="cont-type">
-                    {content.type.toUpperCase()}
+                    {content?.type?.toUpperCase() ?? ""}
                 </p>
             </div>
         </div>
@@ -151,11 +152,16 @@
             </button>
         </div>
 
-        <p style="pointer-events: none;" class="song-index">{index + 1}</p>
+        <p style="pointer-events: none;" class="song-index">{elIndex + 1}</p>
     </div>
 </div>
 
 <style>
+    .active {
+        left: 40px !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+    }
+
     .actions-div {
         position: absolute;
 
@@ -278,6 +284,9 @@
     }
 
     .button {
+
+        left: 0px;
+
         display: flex;
 
         position: relative;

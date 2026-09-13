@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 
 namespace LOLLOMUSICX
 {
@@ -111,5 +112,16 @@ namespace LOLLOMUSICX
             }
             Directory.CreateDirectory(path);
         }
+
+        public static async Task CacheSongs(string id)
+        {
+            string P = Path.Combine(Program.cachedVideosPath, $"{id}.webm");
+
+            if (!File.Exists(P))
+            {
+                await Program.yTMusicClient.DownloadVideoById(id, P);
+            }
+        }
+
     }
 }

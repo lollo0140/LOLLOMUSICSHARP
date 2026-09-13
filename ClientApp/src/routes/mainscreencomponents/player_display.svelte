@@ -63,13 +63,13 @@
                 onerror={(e) => {
                     currentSongImmage = "/assets/defpng/def_song_icon.png";
                 }}
-                src={currentSongImmage}
+                src={currentSongImmage ?? undefined}
                 alt=""
             />
             <div class="currentInfo">
-                <p class="currentTitile">{currentSong.title.toUpperCase()}</p>
+                <p class="currentTitile">{currentSong?.title?.toUpperCase()}</p>
                 <div class="currentArtist">
-                    {#each currentSong.artists ?? [] as A, i}
+                    {#each currentSong?.artists ?? [] as A, i}
                         {#if A?.artistId}
                             <button
                                 class="artButton"
@@ -97,7 +97,7 @@
                         }}
                         class="albButton"
                     >
-                        {currentSong.album.titleName.toUpperCase()}
+                        {currentSong?.album?.titleName?.toUpperCase()}
                     </button>
                 {/if}
             </div>

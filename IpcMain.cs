@@ -278,7 +278,7 @@ class IpcMain
             switch (type)
             {
                 case "album":
-                    Return = JsonSerializer.Serialize(await Program.yTMusicClient.BrowseEndpoint.FetchAlbumData(browseId));
+                    Return = JsonSerializer.Serialize(await Program.yTMusicClient.BrowseEndpoint.FetchAlbumData(browseId, true));
                     break;
 
                 case "playlist":
@@ -530,6 +530,11 @@ class IpcMain
 
             JsonArray array = [.. _.Select(element => element.Value.DeepClone())];
             return JsonSerializer.Serialize(array);
+        });
+
+        Electron.IpcMain.On("cacheId", async (id) =>
+        {
+            await Utility.CacheSongs((string)id);
         });
 
     }

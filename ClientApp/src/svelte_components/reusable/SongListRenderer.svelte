@@ -43,19 +43,21 @@
 
 <div class="list-renderer" bind:this={container}>
     {#each content as item, index}
-        <div class="place-holder">
-            {#if scroll === undefined || (index > hiddenBehind && index <= showedItem)}
-                <SongButton
-                    onclick={() => {
-                        SetCurrentPlaylist(content, index, from);
-                    }}
-                    content={item}
-                    {index}
-                    {renderPhoto}
-                    fatherId={playlistId}
-                />
-            {/if}
-        </div>
+        {#if item.type != "none" && item?.id != undefined}
+            <div class="place-holder">
+                {#if scroll === undefined || (index > hiddenBehind && index <= showedItem)}
+                    <SongButton
+                        onclick={() => {
+                            SetCurrentPlaylist(content, index, from);
+                        }}
+                        content={item}
+                        elIndex={index}
+                        {renderPhoto}
+                        fatherId={playlistId}
+                    />
+                {/if}
+            </div>
+        {/if}
     {/each}
 </div>
 

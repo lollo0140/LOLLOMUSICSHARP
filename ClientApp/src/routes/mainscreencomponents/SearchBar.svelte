@@ -145,6 +145,9 @@
         display: flex;
         flex-direction: row;
 
+        text-wrap: nowrap;
+        white-space: nowrap;
+
         justify-content: start;
         align-items: center;
         width: 100%;

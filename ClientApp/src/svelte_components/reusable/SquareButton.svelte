@@ -11,7 +11,7 @@
     let immage = $state();
 
     onMount(() => {
-        immage.src = content.thumbnails[1];
+        immage.src = content?.thumbnails?.[1] ?? undefined;
     });
 
     async function imgError() {
@@ -34,6 +34,8 @@
         }
     }
 </script>
+
+
 
 <button
     {onclick}

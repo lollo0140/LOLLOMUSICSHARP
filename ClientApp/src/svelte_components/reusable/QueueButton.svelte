@@ -10,7 +10,7 @@
     <div class="song-button">
         <SongButton
             {content}
-            {index}
+            elIndex={index}
             {onclick}
             renderPhoto={false}
             fatherId={undefined}

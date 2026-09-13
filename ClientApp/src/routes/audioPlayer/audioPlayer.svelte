@@ -23,8 +23,19 @@
 <script>
     import { onMount } from "svelte";
 
-    import { playState, queue, index, NextTrack, repeatValue, loading } from "./playerStore";
-    import { SetCurrentTime, SetDurationTime } from "../mainscreencomponents/Controlls.svelte";
+    import {
+        playState,
+        queue,
+        index,
+        NextTrack,
+        repeatValue,
+        loading,
+    } from "./playerStore";
+    import {
+        SetCurrentTime,
+        SetDurationTime,
+    } from "../mainscreencomponents/Controlls.svelte";
+    import { ESend } from "../../scripts/electronInvoker";
 
     let audioSource = $derived.by(() => {
         const current = $queue[$index];
@@ -42,28 +53,27 @@
 </script>
 
 <audio
-
-    ontimeupdate={ () => {
-        SetCurrentTime(player.currentTime)
+    ontimeupdate={() => {
+        SetCurrentTime(player.currentTime);
     }}
-
     onplay={() => {
         $loading = false;
-        SetDurationTime(player.duration)
+        SetDurationTime(player.duration);
         $playState = true;
+
+        if ($queue?.[$index + 1]?.id != undefined) {
+            ESend("cacheId", $queue?.[$index + 1]?.id);
+        }
     }}
     onpause={() => {
         $playState = false;
     }}
-
     autoplay
-
-    onloadstart={() => {$loading = true}}
-
+    onloadstart={() => {
+        $loading = true;
+    }}
     onended={() => {
-
         console.log($repeatValue);
-
 
         if ($repeatValue === 2) {
             player.currentTime = 0;
@@ -71,12 +81,8 @@
         } else {
             NextTrack();
         }
-
-
     }}
-
     bind:this={player}
     src={audioSource != undefined ? audioSource : ""}
-
     {volume}
 ></audio>

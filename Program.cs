@@ -12,15 +12,18 @@ using ElectronNET.API.Entities;
 using YoutubeMusic;
 using System.Drawing;
 using LOLLOMUSICX;
+using System.Net.Http;
 
 class Program
 {
     public static YTMusicSharp yTMusicClient;
     public static string userSessionJSON = Path.Combine(AppContext.BaseDirectory, "session.json");
     public static string cachedVideosPath = Path.Combine(AppContext.BaseDirectory, "cached");
+    public static string cachedImmagesPath = Path.Combine(AppContext.BaseDirectory, "imgs");
     public static string settingsJSONPath = Path.Combine(AppContext.BaseDirectory, "settings.json");
     public static string downloadPAth = Path.Combine(AppContext.BaseDirectory, "download");
     public static string JSONDownloadsPath = Path.Combine(AppContext.BaseDirectory, "downloaded.json");
+
 
     private static void PreAppOperations()
     {
@@ -78,6 +81,31 @@ class Program
             {
                 return Results.Problem($"Error while loading video: {id}");
             }
+        });
+
+        app.MapGet("/api/img/{x}/{url}", async (int x, string url) =>
+        {
+            string decodedUrl = Uri.UnescapeDataString(url);
+            string safeFileName = $"{x}_" + string.Join("_", decodedUrl.Split(Path.GetInvalidFileNameChars())) + ".png";
+            string P = Path.Combine(cachedImmagesPath, safeFileName);
+
+            Directory.CreateDirectory(cachedImmagesPath);
+
+            if (File.Exists(P))
+            {
+                return Results.File(P, contentType: "image/png", enableRangeProcessing: true);
+            }
+
+            string targetUrl = decodedUrl.StartsWith("http")
+                ? decodedUrl
+                : "https://yt3.googleusercontent.com/" + decodedUrl;
+
+            using var client = new HttpClient();
+            byte[] imageBytes = await client.GetByteArrayAsync(targetUrl);
+
+            await File.WriteAllBytesAsync(P, imageBytes);
+
+            return Results.File(P, contentType: "image/png", enableRangeProcessing: true);
         });
 
         app.UseDefaultFiles();

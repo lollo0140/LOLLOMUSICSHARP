@@ -1,6 +1,7 @@
 <script>
     import { fade } from "svelte/transition";
     import { accountData, setDefault } from "../../stores/settingsStore.js";
+    import { onMount } from "svelte";
 
     let open = $state(false);
 
@@ -11,30 +12,31 @@
     async function LogOff() {
         await window.electron.ipcRenderer.lolloInvoke("LogOff");
     }
+
+    onMount(() => {
+        window.addEventListener("click", (e) => {
+            if (!e.target.classList.contains("log")) {
+                open = false;
+            }
+        });
+    });
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div
-    class={open ? "loginDivOpen" : "loginDivClosed"}
-    onmouseenter={() => {
-        open = true;
-    }}
-    onmouseleave={() => {
-        open = false;
-    }}
->
+<div class="{open ? 'loginDivOpen' : 'loginDivClosed'} log">
     {#if open}
-        <img src={$accountData.imgUrl} alt="" />
+        <img class="log" src={$accountData.imgUrl} alt="" />
 
-        <div in:fade class="text">
-            <p style="font-weight: 900;">{$accountData.name}</p>
-            <p style="opacity: 0.7; font-weight: 700;">
+        <div in:fade class="text log">
+            <p style="font-weight: 900;" class="log">{$accountData.name}</p>
+            <p style="opacity: 0.7; font-weight: 700;" class="log">
                 {$accountData.username}
             </p>
         </div>
 
         {#if $accountData.logged}
             <button
+                class="log"
                 onclick={() => {
                     LogOff();
                     setDefault();
@@ -42,18 +44,50 @@
             >
         {:else}
             <button
+                class="log"
                 onclick={() => {
                     LogIn();
                 }}>LOG IN</button
             >
         {/if}
     {:else}
-        <p class="acc-name">{$accountData.name ?? "guest"}</p>
-        <img src={$accountData.imgUrl} alt="" />
+        <button
+            class="open-button log"
+            onclick={() => {
+                open = true;
+            }}
+        >
+            <img src={$accountData.imgUrl} alt="" />
+            <p class="acc-name">{$accountData.name ?? "guest"}</p>
+        </button>
     {/if}
 </div>
 
 <style>
+    .open-button {
+        margin: 0px;
+        width: 100%;
+        height: 35px;
+
+        padding: 0px;
+
+        align-items: center;
+        justify-content: space-between;
+        display: flex;
+        flex-direction: row;
+
+
+
+        background: none;
+    }
+
+    .open-button * {
+        pointer-events: none;
+    }
+
+    .open-button img {
+        height: calc(100% - 10px);
+    }
 
     .acc-name {
         color: white;
@@ -63,17 +97,19 @@
         opacity: 0.7;
 
         margin-top: 12px;
-        margin-left: 10px;
+        margin-left: 0px;
+        margin-right: 8px;
 
         white-space: nowrap;
-
     }
 
     .loginDivClosed {
+
+        overflow: hidden;
+
         display: flex;
 
         z-index: 2;
-
 
         width: 175px;
         height: 35px;
@@ -89,13 +125,17 @@
     }
 
     .loginDivOpen {
-        display: flex;
 
+        overflow: hidden;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-around;
 
         z-index: 2;
 
-
-        width: auto;
+        width: 400px;
         height: 70px;
 
         border-radius: 45px;
@@ -109,7 +149,7 @@
     }
 
     .text {
-        margin-top: 10px;
+        margin-top: 0px;
 
         display: flex;
         flex-direction: column;
@@ -123,7 +163,6 @@
         margin: 2px;
 
         white-space: nowrap;
-
     }
 
     .loginDivClosed img {
@@ -132,13 +171,17 @@
     }
 
     .loginDivOpen img {
-        margin: 9px;
+        margin: 0px;
         border-radius: 49px;
+
+        height: 55px;
     }
 
     button {
-        margin: 9px;
+        margin: 0px;
         border-radius: 49px;
+
+        height: 50px;
 
         border: none;
         background: rgba(255, 255, 255, 0.1);
