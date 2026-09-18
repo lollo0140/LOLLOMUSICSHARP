@@ -1,4 +1,10 @@
 <script module>
+    let showControllsInHome = $state(true);
+
+    export function HideControllsInHome(state) {
+        showControllsInHome = !state;
+    }
+
     import {
         WinStateToFullscreen,
         WinStateToOpen,
@@ -92,7 +98,6 @@
             if (!fullscreen) {
                 WinStateToFullscreen();
             }
-
         }
     });
 
@@ -131,15 +136,18 @@
 </main>
 
 {#if opened && currentSong != undefined}
-    <div
-        class={$settings.appearence.winStyle === "pill"
-            ? "controllsWrapperPill"
-            : "controllsWrapperFloat"}
-        transition:fly={{ y: -20 }}
-    >
-        <Controlls />
-        <Background />
-    </div>
+    {#if showControllsInHome}
+        <div
+            class={$settings.appearence.winStyle === "pill"
+                ? "controllsWrapperPill"
+                : "controllsWrapperFloat"}
+            transition:fly={{ y: -20 }}
+        >
+            <Controlls />
+
+            <Background />
+        </div>
+    {/if}
 {/if}
 
 <ContextMenu />

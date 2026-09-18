@@ -27,6 +27,3 @@ ClientApp/!.env.test
 # Vite
 ClientApp/vite.config.js.timestamp-*
 ClientApp/vite.config.ts.timestamp-*
-
-# .NET User Secrets / Config locali (Opzionale: scommenta se hai dati sensibili)
-# appsettings.Development.json

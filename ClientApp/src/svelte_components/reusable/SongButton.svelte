@@ -10,6 +10,7 @@
     } from "../../stores/songDataBase.js";
     import { openContextMenu } from "../../routes/ContextMenu.svelte";
     import { queue, index } from "../../routes/audioPlayer/playerStore";
+    import { GetImmageUrl } from "../../scripts/immages";
 
     let {
         onclick,
@@ -29,9 +30,14 @@
         imgurl = await GetDefPng("track");
     }
 
-    onMount(() => {
-        content.playlistId = fatherId;
+    let fullInfos = $derived.by(() => {
+        return {
+            ...content,
+            playlistId: fatherId,
+        };
+    });
 
+    onMount(() => {
         if (renderPhoto) {
             imgurl = content.thumbnails[0];
         }
@@ -40,123 +46,164 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-    class="button {($queue?.[$index]?.id ?? "") === content.id ? 'active' : ''}"
+    class="button {($queue?.[$index]?.id ?? '') === content.id ? 'active' : ''}"
     oncontextmenu={(e) => {
         e.preventDefault();
-        openContextMenu(e, content, false);
+        openContextMenu(e, fullInfos, false);
     }}
 >
     <div class="button-content">
-        <button {onclick} class="song-button">.</button>
+        {#if content.type != "none" && content?.id != undefined}
+            <button {onclick} class="song-button">.</button>
 
-        {#if renderPhoto}
-            <img
-                class={content.type === "video" ? "videoImg" : ""}
-                src={`http://localhost:8001/api/img/30/${imgurl.replace("https://yt3.googleusercontent.com/", "")}`}
-                alt=""
-                decoding="async"
-                loading="lazy"
-                onerror={() => {
-                    SetDefault();
-                }}
-            />
-        {/if}
+            {#if renderPhoto}
+                <img
+                    class={content.type === "video" ? "videoImg" : ""}
+                    src={GetImmageUrl(imgurl, 30, true)}
+                    alt=""
+                    decoding="async"
+                    loading="lazy"
+                    onerror={() => {
+                        SetDefault();
+                    }}
+                />
+            {/if}
 
-        <div class="data-strip" style="pointer-events: none;">
-            <div
-                style="display: flex; flex-direction: row; align-items: center; pointer-events: none;"
-            >
-                {#if content.explicit}
-                    <img
-                        class="badge"
-                        src="/assets/badge/explicitbadge.png"
-                        alt=""
-                    />
-                {/if}
+            <div class="data-strip" style="pointer-events: none;">
+                <div
+                    style="display: flex; flex-direction: row; align-items: center; pointer-events: none;"
+                >
+                    {#if content.explicit}
+                        <img
+                            class="badge"
+                            src="/assets/badge/explicitbadge.png"
+                            alt=""
+                        />
+                    {/if}
 
-                <p class="text">
-                    {content?.title?.toUpperCase() ??
-                        content?.itemTitle?.toUpperCase()}
-                </p>
-            </div>
+                    <p class="text">
+                        {content?.title?.toUpperCase() ??
+                            content?.itemTitle?.toUpperCase()}
+                    </p>
+                </div>
 
-            <div class="subtext" style="pointer-events: none;">
-                {#each content.artists as art, i}
-                    {#if art.artistId}
+                <div class="subtext" style="pointer-events: none;">
+                    {#each content.artists as art, i}
+                        {#if art.artistId}
+                            <!-- svelte-ignore node_invalid_placement_ssr -->
+                            <button
+                                style="pointer-events: all;"
+                                class="link"
+                                onclick={(e) => {
+                                    e.stopPropagation();
+                                    NavigateTo("/artists", [
+                                        `browseid=${art.artistId}`,
+                                    ]);
+                                }}
+                            >
+                                {content.artists[i + 1]
+                                    ? art?.artistName?.toUpperCase() + ","
+                                    : art?.artistName?.toUpperCase()}</button
+                            >
+                        {:else if art.channelId}
+                            <p>
+                                {art?.channelName?.toUpperCase() ??
+                                    art?.artistName?.toUpperCase()}
+                            </p>
+                        {/if}
+                    {/each}
+
+                    {#if content.album}
+                        <p style="pointer-events: none;">•</p>
                         <!-- svelte-ignore node_invalid_placement_ssr -->
                         <button
-                            style="pointer-events: all;"
                             class="link"
+                            style="pointer-events: all; margin-left: -5px; pointer-events: all;"
                             onclick={(e) => {
                                 e.stopPropagation();
-                                NavigateTo("/artists", [
-                                    `browseid=${art.artistId}`,
+                                NavigateTo("/album", [
+                                    `browseid=${content.album.albumId}`,
                                 ]);
                             }}
                         >
-                            {content.artists[i + 1]
-                                ? art?.artistName?.toUpperCase() + ","
-                                : art?.artistName?.toUpperCase()}</button
+                            {content.album.titleName.toUpperCase()}</button
                         >
-                    {:else if art.channelId}
-                        <p>
-                            {art?.channelName?.toUpperCase() ??
-                                art?.artistName?.toUpperCase()}
-                        </p>
                     {/if}
-                {/each}
 
-                {#if content.album}
                     <p style="pointer-events: none;">•</p>
-                    <!-- svelte-ignore node_invalid_placement_ssr -->
-                    <button
-                        class="link"
-                        style="pointer-events: all; margin-left: -5px; pointer-events: all;"
-                        onclick={(e) => {
-                            e.stopPropagation();
-                            NavigateTo("/album", [
-                                `browseid=${content.album.albumId}`,
-                            ]);
-                        }}
-                    >
-                        {content.album.titleName.toUpperCase()}</button
-                    >
-                {/if}
-
-                <p style="pointer-events: none;">•</p>
-                <p style="pointer-events: none;" class="cont-type">
-                    {content?.type?.toUpperCase() ?? ""}
-                </p>
+                    <p style="pointer-events: none;" class="cont-type">
+                        {content?.type?.toUpperCase() ?? ""}
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <div class="actions-div" style="pointer-events: all;">
-            <button
-                style="opacity: {Liked ? '1' : '0.3'};"
-                onclick={() => {
-                    SetVideoLike(content.id, !Liked);
-                    Liked = !Liked;
-                }}
-            >
-                <img src="/assets/badge/like.png" alt="" />
-            </button>
-            <button
-                onclick={() => {
-                    if (!IsLocal) {
-                        DownloadSong(content);
-                    }
-                }}
-                style="opacity: {IsLocal ? '1' : '0.3'};"
-            >
-                <img src="/assets/badge/local.png" alt="" />
-            </button>
-        </div>
+            <div class="actions-div" style="pointer-events: all;">
+                <button
+                    style="opacity: {Liked ? '1' : '0.3'};"
+                    onclick={() => {
+                        SetVideoLike(content.id, !Liked);
+                        Liked = !Liked;
+                    }}
+                >
+                    <img src="/assets/badge/like.png" alt="" />
+                </button>
+                <button
+                    onclick={() => {
+                        if (!IsLocal) {
+                            DownloadSong(content);
+                        }
+                    }}
+                    style="opacity: {IsLocal ? '1' : '0.3'};"
+                >
+                    <img src="/assets/badge/local.png" alt="" />
+                </button>
+            </div>
 
-        <p style="pointer-events: none;" class="song-index">{elIndex + 1}</p>
+            <p style="pointer-events: none;" class="song-index">
+                {elIndex + 1}
+            </p>
+        {:else}
+            <div class="unavabile">
+                <p class="unavabile-title">
+                    {content?.itemTitle?.toUpperCase() ?? ""}
+                </p>
+                <p class="unavabile-label">VIDEO UNAVABILE</p>
+            </div>
+
+            <p style="pointer-events: none;" class="song-index">
+                {elIndex + 1}
+            </p>
+        {/if}
     </div>
 </div>
 
 <style>
+    .unavabile {
+        height: 100%;
+
+        display: flex;
+        flex-direction: column;
+
+        align-items: start;
+        justify-content: center;
+
+        color: white;
+        padding-left: 10px;
+    }
+
+    .unavabile-title {
+        margin: 0px;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+    .unavabile-label {
+        margin: 0px;
+        font-size: 15px;
+        opacity: 0.7;
+        font-weight: 700;
+    }
+
     .active {
         left: 40px !important;
         background: rgba(255, 255, 255, 0.15) !important;
@@ -284,7 +331,6 @@
     }
 
     .button {
-
         left: 0px;
 
         display: flex;

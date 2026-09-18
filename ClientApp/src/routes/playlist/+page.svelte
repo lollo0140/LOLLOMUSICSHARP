@@ -47,7 +47,7 @@
     });
 </script>
 
-<PlaylistPage {content}>
+<PlaylistPage {content} playlistId={quary}>
     {#if content?.data?.title}
         <p class="PL-title">
             {(content.data.title ?? "").toUpperCase()}
@@ -68,15 +68,17 @@
     </div>
 
     <div class="facepile">
-        <div>
+        <div class="facepile-icons">
             {#each content.data.facepile.profileIcons as icons, i}
-                <img
-                    style="margin-left: {-20 * i}px;"
-                    class="profile-icon"
-                    src={icons}
-                    alt=""
-                />
+                {#if i < 2}
+                    <img class="profile-icon" src={icons} alt="" />
+                {/if}
             {/each}
+
+            {#if content.data.facepile.profileIcons.length > 2}
+                <div class="more-collaborators">+{content.data.facepile.profileIcons.length - 2}</div>
+            {/if}
+
         </div>
     </div>
 
@@ -227,6 +229,37 @@
         opacity: 0.6;
 
         font-weight: 700;
+    }
+
+    .more-collaborators {
+        background: white;
+        color: rgba(0, 0, 0, 0.6);
+
+        height: 30px;
+        width: 30px;
+
+        border-radius: 20px;
+
+        border: 1px rgba(0, 0, 0, 0.2) solid;
+
+        font-weight: 800;
+
+        display: flex;
+
+        text-align: center;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .facepile-icons {
+        width: 100%;
+
+        display: flex;
+
+    }
+
+    .facepile-icons * {
+        margin-left: -15px;
     }
 
     .facepile {

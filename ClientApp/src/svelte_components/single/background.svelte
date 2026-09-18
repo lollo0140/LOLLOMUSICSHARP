@@ -1,14 +1,24 @@
+<script module>
+
+    let backgroundStyle = $state("filter: blur(40px) brightness(0.3);")
+    export function SetFilters(opacity, blur) {
+        backgroundStyle = `filter: blur(${blur}px) brightness(${opacity});`
+    }
+
+</script>
+
 <script>
     import { index, queue } from "../../routes/audioPlayer/playerStore";
+    import { GetImmageUrl } from "../../scripts/immages";
 
     let current = $derived($queue[$index]);
 </script>
 
-<div class="bg-wrapper">
-    <div class="bg-animation">
+<div class="bg-wrapper" style="{backgroundStyle}">
+    <div class="bg-animation" style="">
         {#if current != undefined}
-            <img class="bg-img" src={current.thumbnails[1]} alt="" />
-            <img class="bg-img" src={current.thumbnails[1]} alt="" />
+            <img class="bg-img" src={GetImmageUrl(current.thumbnails[1], 300)} alt="" />
+            <img class="bg-img" src={GetImmageUrl(current.thumbnails[1], 300)} alt="" />
         {/if}
     </div>
 </div>
@@ -29,7 +39,7 @@
         width: 1410px;
         height: 700px;
 
-        filter: blur(12px) brightness(0.2);
+        transition: all 500ms;
     }
 
     @keyframes rotating {

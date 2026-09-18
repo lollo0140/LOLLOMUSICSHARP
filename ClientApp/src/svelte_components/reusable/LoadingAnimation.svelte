@@ -17,6 +17,8 @@
 
     img {
 
+        filter: drop-shadow(4px 4px 5px black);
+
         opacity: 0.6;
 
         width: 10%;

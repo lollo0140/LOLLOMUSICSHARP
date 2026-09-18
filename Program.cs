@@ -46,6 +46,9 @@ class Program
         }
 
         Utility.ValidateDownloaded();
+
+        DiscordRPCHandler.InitializeClient();
+
     }
 
     public static void Main(string[] args)
@@ -58,55 +61,7 @@ class Program
 
         var app = builder.Build();
 
-        app.MapGet("/api/audio/{id}", async (string id) =>
-        {
-            try
-            {
-                if (Utility.IsVideoLocal(id))
-                {
-                    string localPath = Utility.GetLocalStreamingPath(id);
-                    return Results.File(localPath, contentType: "audio/webm", enableRangeProcessing: true);
-                }
-
-                string P = Path.Combine(cachedVideosPath, $"{id}.webm");
-
-                if (!File.Exists(P))
-                {
-                    await yTMusicClient.DownloadVideoById(id, P);
-                }
-
-                return Results.File(P, contentType: "audio/webm", enableRangeProcessing: true);
-            }
-            catch
-            {
-                return Results.Problem($"Error while loading video: {id}");
-            }
-        });
-
-        app.MapGet("/api/img/{x}/{url}", async (int x, string url) =>
-        {
-            string decodedUrl = Uri.UnescapeDataString(url);
-            string safeFileName = $"{x}_" + string.Join("_", decodedUrl.Split(Path.GetInvalidFileNameChars())) + ".png";
-            string P = Path.Combine(cachedImmagesPath, safeFileName);
-
-            Directory.CreateDirectory(cachedImmagesPath);
-
-            if (File.Exists(P))
-            {
-                return Results.File(P, contentType: "image/png", enableRangeProcessing: true);
-            }
-
-            string targetUrl = decodedUrl.StartsWith("http")
-                ? decodedUrl
-                : "https://yt3.googleusercontent.com/" + decodedUrl;
-
-            using var client = new HttpClient();
-            byte[] imageBytes = await client.GetByteArrayAsync(targetUrl);
-
-            await File.WriteAllBytesAsync(P, imageBytes);
-
-            return Results.File(P, contentType: "image/png", enableRangeProcessing: true);
-        });
+        ApiMaps.MapApiPorts(app);
 
         app.UseDefaultFiles();
         app.UseStaticFiles();

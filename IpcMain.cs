@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
+using DiscordRPC;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using LOLLOMUSICX;
@@ -447,6 +448,38 @@ class IpcMain
 
     public static void RegisterSystemHandlers(BrowserWindow win)
     {
+
+        Electron.IpcMain.On("setRpc", async (data) =>
+        {
+
+            JsonNode parsedData = JsonNode.Parse((string)data);
+
+            string title = parsedData?["title"]?.GetValue<string>() ?? "";
+            string artName = parsedData?["artists"]?[0]?["artistName"]?.GetValue<string>() ?? "";
+            string album = "- " + (parsedData?["album"]?["titleName"]?.GetValue<string>() ?? "");
+
+            string albumDisplay = ("- " + title != album) ? album : "";
+
+            DiscordRPCHandler.client.SetPresence(new RichPresence()
+            {
+                Details = $"{title}",
+                State = $"{artName} {albumDisplay}",
+                Assets = new Assets()
+                {
+                    LargeImageKey = "applabeldiscord",
+                },
+                Buttons = new Button[]
+                {
+                    new Button()
+                    {
+                        Label = "lollo0140/LOLLOMUSICSHARP",
+                        Url = "https://github.com/lollo0140/LOLLOMUSICSHARP"
+                    }
+                }
+            });
+
+        });
+
         RegisterHandle(win, "openDirPicker", async () =>
         {
             return await ElectronFunctions.OpenDirectoryPicker(win);

@@ -8,7 +8,7 @@
 <p class="section-title">{content.sectionTitle.toUpperCase()}</p>
 
 {#each content.content as item}
-    {#if item.type !== "podcast" && item.type !== "channel" && item.type !== "episode"}
+    {#if item?.type && item.type !== "podcast" && item.type !== "channel" && item.type !== "episode"}
         <div>
             <ResultListElement
                 content={item}

@@ -99,6 +99,12 @@ export function PreviousTrack() {
 
 
 export function SetCurrentPlaylist(videos, i = 0, From = "") {
+
+    console.log("loading playlist: " + From);
+    console.log(videos);
+
+
+
     originalQueue = [...videos];
     const isShuffled = get(shuffleValue);
 
@@ -126,19 +132,10 @@ export function AddToQueue(video) {
     }
 }
 
-export function RemoveFromQueue(id) {
-    const currentQueue = get(queue);
-    const removeIdx = currentQueue.findIndex(x => x.id === id);
-
-    if (removeIdx === -1) return;
-
-    const currentIndex = get(index);
-
-
-    if (removeIdx < currentIndex) {
-        index.update(i => i - 1);
-    }
-
-    queue.update(songs => songs.filter(s => s.id !== id));
-    originalQueue = originalQueue.filter(s => s.id !== id);
+export function RemoveFromQueue(index) {
+    queue.update(q => {
+        let arr = q;
+        arr.splice(index, 1);
+        return arr;
+    });
 }

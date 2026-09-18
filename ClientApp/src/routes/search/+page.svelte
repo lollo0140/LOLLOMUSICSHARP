@@ -165,17 +165,19 @@
                         <div class="best-result-content">
                             {#if content.bestResult.content && content.bestResult.content.length > 1}
                                 {#each content.bestResult.content as item}
-                                    <ResultListElement
-                                        content={item}
-                                        from={`results for: ${searchKey}`}
-                                        onclick={() => {
-                                            SetCurrentPlaylist(
-                                                [item],
-                                                0,
-                                                `top results: ${searchKey}`,
-                                            );
-                                        }}
-                                    />
+                                    {#if item?.type}
+                                        <ResultListElement
+                                            content={item}
+                                            from={`results for: ${searchKey}`}
+                                            onclick={() => {
+                                                SetCurrentPlaylist(
+                                                    [item],
+                                                    0,
+                                                    `top results: ${searchKey}`,
+                                                );
+                                            }}
+                                        />
+                                    {/if}
                                 {/each}
                             {/if}
                         </div>

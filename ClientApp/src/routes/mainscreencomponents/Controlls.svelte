@@ -210,8 +210,6 @@
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-
-        margin-left: 20px;
     }
 
     .mainButtons {

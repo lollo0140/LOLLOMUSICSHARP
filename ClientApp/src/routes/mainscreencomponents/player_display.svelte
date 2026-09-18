@@ -12,6 +12,7 @@
         playState,
         loading,
     } from "../audioPlayer/playerStore.js";
+    import { GetImmageUrl } from "../../scripts/immages";
 
     let currentSongImmage = $derived.by(() => {
         if (!currentSong?.thumbnails || currentSong.thumbnails.length === 0) {
@@ -63,7 +64,7 @@
                 onerror={(e) => {
                     currentSongImmage = "/assets/defpng/def_song_icon.png";
                 }}
-                src={currentSongImmage ?? undefined}
+                src={GetImmageUrl(currentSongImmage, 300)}
                 alt=""
             />
             <div class="currentInfo">
@@ -165,6 +166,7 @@
     .currentArtist {
         display: flex;
         flex-direction: row;
+        flex-wrap: wrap;
         gap: 6px;
     }
 
@@ -177,6 +179,8 @@
         font-size: 17px;
         opacity: 0.7;
         font-weight: 800;
+
+        white-space: nowrap;
 
         cursor: pointer;
     }

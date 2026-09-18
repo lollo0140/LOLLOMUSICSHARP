@@ -131,7 +131,7 @@
 
                 <p>•</p>
                 <p style="font-weight: 800; opacity: 0.55;">
-                    {content.type.toUpperCase()}
+                    {content?.type?.toUpperCase() ?? ""}
                 </p>
             </div>
 

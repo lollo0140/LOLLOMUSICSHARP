@@ -37,11 +37,11 @@
     } from "../mainscreencomponents/Controlls.svelte";
     import { ESend } from "../../scripts/electronInvoker";
 
-    let audioSource = $derived.by(() => {
-        const current = $queue[$index];
+    let currentSong = $derived($queue[$index]);
 
-        if (current != undefined && current?.id != undefined) {
-            const url = `http://localhost:8001/api/audio/${current.id}`;
+    let audioSource = $derived.by(() => {
+        if (currentSong != undefined && currentSong?.id != undefined) {
+            const url = `http://localhost:8001/api/audio/${currentSong.id}`;
 
             console.log(url);
 
@@ -64,6 +64,9 @@
         if ($queue?.[$index + 1]?.id != undefined) {
             ESend("cacheId", $queue?.[$index + 1]?.id);
         }
+
+        ESend("setRpc", JSON.stringify(currentSong));
+
     }}
     onpause={() => {
         $playState = false;
@@ -71,6 +74,11 @@
     autoplay
     onloadstart={() => {
         $loading = true;
+
+        if (currentSong && currentSong?.type === "none") {
+            console.log("non valid track. skipping to the next");
+            NextTrack();
+        }
     }}
     onended={() => {
         console.log($repeatValue);

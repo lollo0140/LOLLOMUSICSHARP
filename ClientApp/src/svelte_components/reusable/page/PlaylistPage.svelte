@@ -8,7 +8,7 @@
     import SongListRenderer from "../SongListRenderer.svelte";
     import PageHeader from "../PageHeader.svelte";
 
-    let { children, content } = $props();
+    let { children, content, playlistId = undefined } = $props();
 
     let pageScroll = $state(0);
     let mainElement = $state(null);
@@ -39,7 +39,7 @@
             <SongListRenderer
                 scroll={pageScroll}
                 content={content.items}
-                playlistId={content.id}
+                playlistId={playlistId}
                 from={(content.data.title ?? "").toUpperCase()}
             />
         </div>

@@ -1,58 +1,63 @@
+<script module>
+    let ImmersiveMode = $state(false);
+    export function SetImmersiveMode(state) {
+        ImmersiveMode = state;
+    }
+
+</script>
+
 <script>
     import { fly } from "svelte/transition";
     import { index, queue } from "../audioPlayer/playerStore";
     import NavigationBar from "./navigation_bar.svelte";
     import PlayerDisplay from "./player_display.svelte";
     import UpperBar from "./UpperBar.svelte";
+    import ImmersiveDisplay from "./ImmersiveDisplay.svelte";
 
     let currentTrack = $derived($queue[$index]);
 
     let { children } = $props();
+
+
+
 </script>
 
 <div class="content">
-    <div class="app-content">
-        <div
-            style={currentTrack === undefined ? "right: 0px;" : ""}
-            class="app-navigator lollo-appstyle-DivContainer"
-        >
-            <nav
-                class="lollo-appstyle-DivContainer"
-                style="border-radius: 23px;"
-            >
-                <NavigationBar />
-            </nav>
-
-            <div class="upper-bar">
-
-            </div>
-
-            <div class="content-renderer lollo-appstyle-DivContainer">
-                {@render children()}
-            </div>
-        </div>
-
-        {#if currentTrack}
+    {#if !ImmersiveMode}
+        <div in:fly={{y:100, delay: 200}} out:fly={{y:100}} class="app-content">
             <div
-                transition:fly={{ x: 200 }}
-                class="display lollo-appstyle-DivContainer"
+                style={currentTrack === undefined ? "right: 0px;" : ""}
+                class="app-navigator lollo-appstyle-DivContainer"
             >
-                <PlayerDisplay />
+                <nav
+                    class="lollo-appstyle-DivContainer"
+                    style="border-radius: 23px;"
+                >
+                    <NavigationBar />
+                </nav>
+
+                <div class="content-renderer lollo-appstyle-DivContainer">
+                    {@render children()}
+                </div>
             </div>
-        {/if}
-    </div>
+
+            {#if currentTrack}
+                <div
+                    transition:fly={{ x: 200 }}
+                    class="display lollo-appstyle-DivContainer"
+                >
+                    <PlayerDisplay />
+                </div>
+            {/if}
+        </div>
+        {:else}
+        <ImmersiveDisplay/>
+    {/if}
+
+
 </div>
 
 <style>
-    .upper-bar {
-        position: absolute;
-
-        top: 8px;
-        left: 73px;
-        right: 58px;
-
-        height: 42px;
-    }
 
     .content-renderer {
         position: absolute;

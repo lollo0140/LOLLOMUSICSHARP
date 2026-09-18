@@ -29,8 +29,6 @@
 
     onMount(async () => {
         await loadList();
-
-        await goto("/library", { replaceState: true });
     });
 </script>
 
