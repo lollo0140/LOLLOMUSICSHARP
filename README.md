@@ -1,6 +1,24 @@
 # LOLLOMUSICSHARP (LOLLOMUSICX)
 
-Desktop music client based on YouTube Music, developed with .NET 10 (ASP.NET Core), Electron.NET, and a modern frontend interface powered by Svelte 5, Tailwind CSS, and GSAP.
+Desktop music client based on YouTube Music, developed with .NET 10 (ASP.NET Core), Electron.NET, and a modern frontend interface powered by Svelte 5, and GSAP.
+
+**HOME**
+![home](readmeimgs/home.png)
+
+**LIBRARY**
+![library](readmeimgs/library.png)
+
+**SEARCH**
+![search page](readmeimgs/search.png)
+
+**ALBUM PAGE**
+![album](readmeimgs/album.png)
+
+**PLAYLIST PAGE**
+![playlist](readmeimgs/playlist.png)
+
+**FULLSCREEN VIEW**
+![fullscreen](readmeimgs/fullscreen.png)
 
 ---
 
