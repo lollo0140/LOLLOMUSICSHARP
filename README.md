@@ -258,6 +258,8 @@ LOLLOMUSICSHARP/
 |-- preload.js                   Secure Electron context isolation bridge
 +-- README.md                    Repository documentation
 ```
+---
+Keep in mind that this is NOT a finished project, you may encounter bugs or missing content
 
 ---
 
