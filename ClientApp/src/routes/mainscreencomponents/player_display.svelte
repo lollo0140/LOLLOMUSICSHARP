@@ -13,6 +13,13 @@
         loading,
     } from "../audioPlayer/playerStore.js";
     import { GetImmageUrl } from "../../scripts/immages";
+    import {
+        downloaded,
+        DownloadSong,
+        likedSongs,
+        SetVideoLike,
+    } from "../../stores/songDataBase";
+    import { openContextMenu } from "../ContextMenu.svelte";
 
     let currentSongImmage = $derived.by(() => {
         if (!currentSong?.thumbnails || currentSong.thumbnails.length === 0) {
@@ -46,6 +53,10 @@
     let currentSong = $derived.by(() => {
         return $queue[$index] ?? undefined;
     });
+
+    let Liked = $derived($likedSongs.has(currentSong.id));
+
+    let IsLocal = $derived($downloaded.has(currentSong.id));
 </script>
 
 {#if currentSong != undefined}
@@ -67,6 +78,46 @@
                 src={GetImmageUrl(currentSongImmage, 300)}
                 alt=""
             />
+
+            <div class="track-actions">
+                <button
+                    onclick={() => {
+                        SetVideoLike(currentSong.id, !Liked);
+                        Liked = !Liked;
+                    }}
+                    style="opacity: {Liked ? '1' : '0.3'};"
+                >
+                    <img src="assets/badge/like.png" alt="" />
+                </button>
+                <button
+                    onclick={() => {
+                        if (!IsLocal) {
+                            DownloadSong(currentSong);
+                        }
+                    }}
+                    style="opacity: {IsLocal ? '1' : '0.3'};"
+                >
+                    <img src="assets/badge/local.png" alt="" />
+                </button>
+                <button
+                    class="page-menu"
+                    onclick={(e) => {
+                        openContextMenu(e, currentSong, false);
+                    }}
+                >
+                    <img src="assets/buttons/more_options.png" alt="" />
+                </button>
+                <button
+                    onclick={() => {
+                        navigator.clipboard.writeText(
+                            `https://www.youtube.com/watch?v=${currentSong.id}`,
+                        );
+                    }}
+                >
+                    <img src="assets/buttons/share.png" alt="" />
+                </button>
+            </div>
+
             <div class="currentInfo">
                 <p class="currentTitile">{currentSong?.title?.toUpperCase()}</p>
                 <div class="currentArtist">
@@ -111,8 +162,38 @@
 {/if}
 
 <style>
-    .loading-div {
+    .track-actions {
+        border-top: rgba(255, 255, 255, 0.3) solid 1px;
+        border-bottom: rgba(255, 255, 255, 0.3) solid 1px;
 
+        margin-left: 10px;
+        margin-right: 10px;
+
+        height: 50px;
+
+        display: flex;
+        flex-direction: row;
+
+        align-items: center;
+        justify-content: center;
+
+        gap: 20px;
+    }
+
+    .track-actions button {
+        background: none;
+        border: none;
+
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+
+        cursor: pointer;
+    }
+
+    .track-actions button:hover {
+        transform: scale(1.1);
+    }
+
+    .loading-div {
         border: 1px rgba(255, 255, 255, 0.1) solid;
         border-radius: 15px;
 
