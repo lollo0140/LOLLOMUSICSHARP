@@ -33,9 +33,10 @@
         },
     };
 
-    onMount(async () => {
+    async function LoadPage() {
+        content = undefined;
         contentVisible = false;
-        SetPageButtons([]);
+
         console.log("loading playlist: ", quary);
         content = await GetPlaylistPage(quary);
 
@@ -44,6 +45,20 @@
         }
         contentVisible = true;
         console.log(content);
+    }
+
+    onMount(async () => {
+        SetPageButtons([
+            {
+                text: "reload",
+                onclick: async () => {
+                    LoadPage();
+                },
+            },
+        ]);
+
+        await LoadPage();
+
     });
 </script>
 
@@ -76,9 +91,10 @@
             {/each}
 
             {#if content.data.facepile.profileIcons.length > 2}
-                <div class="more-collaborators">+{content.data.facepile.profileIcons.length - 2}</div>
+                <div class="more-collaborators">
+                    +{content.data.facepile.profileIcons.length - 2}
+                </div>
             {/if}
-
         </div>
     </div>
 
@@ -255,7 +271,6 @@
         width: 100%;
 
         display: flex;
-
     }
 
     .facepile-icons * {

@@ -28,7 +28,23 @@ class Program
     private static void PreAppOperations()
     {
 
+        //setting up paths
+
+        string AppDataDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "lollomusicx"
+        );
+
+        if (!Directory.Exists(AppDataDirectory)) Directory.CreateDirectory(AppDataDirectory);
+
+        userSessionJSON = Path.Combine(AppDataDirectory, "session.json");
+        settingsJSONPath = Path.Combine(AppDataDirectory, "settings.json");
+        JSONDownloadsPath = Path.Combine(AppDataDirectory, "downloaded.json");
+
+
+
         if (!Directory.Exists(cachedVideosPath)) Directory.CreateDirectory(cachedVideosPath);
+        if (!Directory.Exists(cachedImmagesPath)) Directory.CreateDirectory(cachedImmagesPath);
         if (!Directory.Exists(downloadPAth)) Directory.CreateDirectory(downloadPAth);
 
         if (File.Exists(userSessionJSON))
@@ -65,6 +81,9 @@ class Program
 
         app.UseDefaultFiles();
         app.UseStaticFiles();
+
+        app.MapFallbackToFile("index.html");
+
         app.UseRouting();
         app.UseAuthorization();
         app.MapControllers();
@@ -154,7 +173,6 @@ class Program
             Width = isPill ? 0 : 1400,
             SkipTaskbar = isPill,
             AlwaysOnTop = isPill,
-            Icon = Path.Combine(AppContext.BaseDirectory, "wwwroot", "Icon.png"),
             WebPreferences = new WebPreferences
             {
                 ContextIsolation = true,
@@ -170,10 +188,13 @@ class Program
         _ = IpcMain.RegisterEvents(window);
         IpcMain.RegisterHandlers(window);
 
-        //window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
 
-        // DEBUG ONLY, comment this line in release
-        window.LoadURL("http://localhost:5173/");
+#if DEBUG
+    window.LoadURL("http://localhost:5173/");
+#else
+    window.LoadURL($"http://localhost:{BridgeSettings.WebPort}/");
+#endif
+
 
         string shortcut = "CommandOrControl+Shift+M";
 

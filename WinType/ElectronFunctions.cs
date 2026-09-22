@@ -8,7 +8,7 @@ class ElectronFunctions
     public static async Task<string> OpenDirectoryPicker(BrowserWindow activeWin)
     {
 
-        activeWin.SetAlwaysOnTop(false);
+        //activeWin.SetAlwaysOnTop(false);
 
         var options = new OpenDialogOptions
         {
@@ -24,11 +24,11 @@ class ElectronFunctions
         if (result != null && result.Length > 0)
         {
             string cartellaSelezionata = result.First();
-            activeWin.SetAlwaysOnTop(true);
+            //activeWin.SetAlwaysOnTop(true);
             return cartellaSelezionata;
         }
 
-        activeWin.SetAlwaysOnTop(true);
+        //activeWin.SetAlwaysOnTop(true);
         return null;
     }
 }

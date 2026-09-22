@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
@@ -448,6 +449,53 @@ class IpcMain
 
     public static void RegisterSystemHandlers(BrowserWindow win)
     {
+        Electron.IpcMain.On("exportVideo", async (videoObj) =>
+        {
+            var json = JsonNode.Parse((string)videoObj);
+
+            string destinationFolder = await ElectronFunctions.OpenDirectoryPicker(win);
+
+            string title = json?["title"]?.GetValue<string>() ?? "";
+            string album = json?["album"]?["titleName"]?.GetValue<string>() ?? "";
+            string firstArtist = json?["artists"]?[0]?["artistName"].GetValue<string>() ?? "";
+
+            string destinationWEBMFile = Path.Join(destinationFolder, $"{title}-{firstArtist}.webm");
+            string destinationMP3File = Path.ChangeExtension(destinationWEBMFile, ".mp3");
+
+            await Program.yTMusicClient.DownloadVideoById(json["id"].GetValue<string>(), destinationWEBMFile);
+
+            //CONVERTING TO MP3
+
+            await CliWrap.Cli.Wrap("ffmpeg").WithArguments(args => args
+            .Add("-i").Add(destinationWEBMFile)
+            .Add("-vn")
+            .Add("-ab").Add("320k")
+            .Add("-ar").Add("44100")
+            .Add("-y")
+            .Add(destinationMP3File)
+            ).ExecuteAsync();
+
+            File.Delete(destinationWEBMFile);
+
+            //ADDING TAGS
+
+            var mp3File = TagLib.File.Create(destinationMP3File);
+
+            mp3File.Tag.Title = title;
+            mp3File.Tag.Album = album;
+
+            var artists = (json?["artists"].AsArray() ?? [])
+                .Select(a => a?["artistName"].GetValue<string>() ?? "")
+                .ToList();
+
+            mp3File.Tag.Performers = [.. artists];
+
+
+            mp3File.Save();
+
+
+
+        });
 
         Electron.IpcMain.On("setRpc", async (data) =>
         {
@@ -547,6 +595,17 @@ class IpcMain
         });
 
 
+        RegisterHandle(win, "getLyrics", async (string title, string artist, string album) =>
+        {
+
+            JsonObject lyr = await Program.yTMusicClient.GetLyrics(title, artist);
+
+            System.Console.WriteLine(lyr);
+
+            return lyr.ToString();
+
+        });
+
 
         RegisterHandle(win, "scanDownloaded", async () =>
         {
@@ -583,7 +642,7 @@ class IpcMain
                     contentType = ContentType.All;
                     break;
 
-                case "traks":
+                case "tracks":
                     contentType = ContentType.Track;
                     break;
 

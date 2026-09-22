@@ -26,18 +26,23 @@ function shuffleArray(array) {
     return shuffled;
 }
 
-export function toggleShuffleMode() {
-    const isShuffled = get(shuffleValue);
+export function toggleShuffleMode(targetState = undefined) {
+    const nextState = targetState !== undefined ? targetState : !get(shuffleValue);
+    SetShuffleMode(nextState);
+}
+
+function SetShuffleMode(shouldEnableShuffle) {
     const currentQueue = get(queue);
     const currentIndex = get(index);
     const currentSong = currentQueue[currentIndex];
 
     if (!currentSong || currentQueue.length === 0) {
-        shuffleValue.set(!isShuffled);
+        shuffleValue.set(shouldEnableShuffle);
         return;
     }
 
-    if (!isShuffled) {
+    if (shouldEnableShuffle) {
+        // --- ATTIVAZIONE SHUFFLE ---
         originalQueue = [...currentQueue];
 
         const otherSongs = currentQueue.filter((_, idx) => idx !== currentIndex);
@@ -47,16 +52,22 @@ export function toggleShuffleMode() {
         index.set(0);
         shuffleValue.set(true);
     } else {
+        // --- DISATTIVAZIONE SHUFFLE ---
         if (originalQueue.length > 0) {
             queue.set([...originalQueue]);
-            const restoredIndex = originalQueue.findIndex(song => song.id === currentSong.id);
+
+            const restoredIndex = originalQueue.findIndex(
+                song => song.id === currentSong.id
+            );
             index.set(restoredIndex !== -1 ? restoredIndex : 0);
         }
         shuffleValue.set(false);
     }
 
-    console.log("shuffle state: " + get(shuffleValue));
+    console.log("shuffle state:", get(shuffleValue));
 }
+
+
 
 
 export function NextTrack() {

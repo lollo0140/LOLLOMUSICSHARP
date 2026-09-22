@@ -20,6 +20,7 @@
         SetVideoLike,
     } from "../../stores/songDataBase";
     import { openContextMenu } from "../ContextMenu.svelte";
+    import LyricsBox from "../../svelte_components/single/LyricsBox.svelte";
 
     let currentSongImmage = $derived.by(() => {
         if (!currentSong?.thumbnails || currentSong.thumbnails.length === 0) {
@@ -153,10 +154,10 @@
                     </button>
                 {/if}
             </div>
-        </div>
 
-        <div style="padding: 10px;">
             <NextUpPannel />
+
+            <LyricsBox />
         </div>
     </main>
 {/if}
@@ -214,8 +215,20 @@
     .current {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 20px;
         padding: 10px;
+
+        overflow-y: scroll;
+
+        /* Per Firefox */
+        scrollbar-width: none;
+
+        /* Per Internet Explorer e legacy Edge */
+        -ms-overflow-style: none;
+    }
+
+    .current::-webkit-scrollbar {
+        display: none !important;
     }
 
     .currentInfo {
@@ -223,7 +236,7 @@
 
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 3px;
     }
 
     .currentImg {

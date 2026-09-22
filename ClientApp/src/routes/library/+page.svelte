@@ -10,10 +10,14 @@
     import { derived } from "svelte/store";
     import { EInvokeJSON } from "../../scripts/electronInvoker";
     import DownloadedSquareButton from "../../svelte_components/single/DownloadedSquareButton.svelte";
+    import { text } from "@sveltejs/kit";
 
+    let showDownloadedButton = $state();
     let content = $state(undefined);
 
     async function LoadPage() {
+        content = undefined;
+
         const [playlists, albums, subscribed] = await Promise.all([
             EInvokeJSON("getLibraryPlaylists"),
             EInvokeJSON("getLibraryAlbums"),
@@ -25,6 +29,11 @@
             albums,
             subscribed,
         };
+
+        const _ = (await EInvokeJSON("getDownloaded")) ?? [];
+        console.log("downloaded ids");
+        console.log(_);
+        showDownloadedButton = _.length > 0;
     }
 
     export async function ReloadLibrary() {
@@ -44,16 +53,18 @@
         },
     };
 
-    let showDownloadedButton = $state();
 
     onMount(async () => {
-        await LoadPage();
+        SetPageButtons([
+            {
+                text: "reload",
+                onclick: async () => {
+                    LoadPage();
+                },
+            },
+        ]);
 
-        //SetDefButtonsAndContent();
-        const _ = (await EInvokeJSON("getDownloaded")) ?? [];
-        console.log("downloaded ids");
-        console.log(_);
-        showDownloadedButton = _.length > 0;
+        await LoadPage();
     });
 </script>
 
@@ -114,7 +125,6 @@
     </div>
 
     <div class="spacer"></div>
-
 </main>
 
 <style>

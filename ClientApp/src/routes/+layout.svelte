@@ -56,6 +56,7 @@
     import LogISection from "./mainscreencomponents/LogISection.svelte";
     import { GetSettings, settings } from "../stores/settingsStore.js";
     import WindowControlls from "./mainscreencomponents/WindowControlls.svelte";
+    import LoadingAnimation from "../svelte_components/reusable/LoadingAnimation.svelte";
 
     let currentSong = $derived.by(() => {
         return $queue[$index] ?? undefined;
@@ -113,8 +114,30 @@
     }}
 ></div>
 
-<main class="MainTag" style="overflow: hidden;">
-    {#if opened}
+{#if $settings}
+    {#if $settings?.appearence?.winStyle === "pill"}
+        <main class="MainTag" style="overflow: hidden;">
+            {#if opened}
+                <div in:fade class="contentAnimator">
+                    <AppContent>
+                        {@render children?.()}
+                    </AppContent>
+
+                    <AddToPlaylistMenu />
+                    <EditPLaylistMenu />
+
+                    <WindowControlls {fullscreen} />
+                </div>
+            {:else}
+                <div in:fade class="contentAnimator">
+                    <MiniPlayer openCommand={ChangeWinState} />
+                </div>
+            {/if}
+            <AudioPlayer />
+
+            <Background />
+        </main>
+    {:else}
         <div in:fade class="contentAnimator">
             <AppContent>
                 {@render children?.()}
@@ -124,30 +147,29 @@
             <EditPLaylistMenu />
 
             <WindowControlls {fullscreen} />
-        </div>
-    {:else}
-        <div in:fade class="contentAnimator">
-            <MiniPlayer openCommand={ChangeWinState} />
-        </div>
-    {/if}
-    <AudioPlayer />
 
-    <Background />
-</main>
-
-{#if opened && currentSong != undefined}
-    {#if showControllsInHome}
-        <div
-            class={$settings.appearence.winStyle === "pill"
-                ? "controllsWrapperPill"
-                : "controllsWrapperFloat"}
-            transition:fly={{ y: -20 }}
-        >
-            <Controlls />
+            <AudioPlayer />
 
             <Background />
         </div>
     {/if}
+
+    {#if opened && currentSong != undefined}
+        {#if showControllsInHome}
+            <div
+                class={$settings.appearence.winStyle === "pill"
+                    ? "controllsWrapperPill"
+                    : "controllsWrapperFloat"}
+                transition:fly={{ y: -20 }}
+            >
+                <Controlls />
+
+                <Background />
+            </div>
+        {/if}
+    {/if}
+{:else}
+    LoadingAnimation
 {/if}
 
 <ContextMenu />

@@ -15,6 +15,11 @@
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
 
+    let imgSrc = $state();
+    let subscribed = $state();
+
+    let contentVisible = $state();
+
     let artistDescription = $derived.by(() => {
         let Pstrings = content.header.headerDescription.replace(
             content.header.wikipediaLink,
@@ -27,11 +32,6 @@
 
         return paragraph.join(".<br><br>") + ".";
     });
-
-    let imgSrc = $state();
-    let subscribed = $state();
-
-    let contentVisible = $state();
 
     export const snapshot = {
         capture: () => {
@@ -47,8 +47,9 @@
         },
     };
 
-    onMount(async () => {
-        SetPageButtons([]);
+    async function LoadPage() {
+        contentVisible = false;
+        content = undefined;
         console.log("loading artist: ", quary);
         content = await GetArtistPage(quary);
 
@@ -58,6 +59,19 @@
         subscribed = content.header.subscribed;
 
         contentVisible = true;
+    }
+
+    onMount(async () => {
+        SetPageButtons([
+            {
+                text: "reload",
+                onclick: async () => {
+                    LoadPage();
+                },
+            },
+        ]);
+
+        await LoadPage();
     });
 </script>
 
@@ -147,7 +161,6 @@
             <LoadingAnimation />
         </div>
     {/if}
-
 </main>
 
 <style>

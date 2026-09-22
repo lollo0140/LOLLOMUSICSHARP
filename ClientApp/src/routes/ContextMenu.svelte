@@ -22,6 +22,7 @@
     import { EditPlaylist } from "./EditPLaylistMenu.svelte";
     import { AddToQueue } from "./audioPlayer/playerStore";
     import { ReloadLibrary } from "./library/+page.svelte";
+    import { ExportVideo } from "../scripts/exporter";
 
     let DATA = $state();
 
@@ -504,7 +505,18 @@
                     forceCloseMenu();
                 },
             });
+
+            buttons.push({
+                text: "EXPORT VIDEO",
+                click: () => {
+                    ExportVideo(data);
+                    forceCloseMenu();
+                },
+            });
         }
+
+
+
     }
 </script>
 

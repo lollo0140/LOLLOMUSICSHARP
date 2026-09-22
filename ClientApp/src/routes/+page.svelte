@@ -14,16 +14,16 @@
             {
                 text: "reload",
                 onclick: async () => {
-                    content = undefined;
-                    let newContent =
-                        await window.electron.ipcRenderer.lolloInvoke(
-                            "getHome",
-                        );
-                    newContent = JSON.parse(newContent);
-                    content = newContent.Result.sections;
+                    LoadPage();
                 },
             },
         ]);
+    }
+
+    async function LoadPage() {
+        content = undefined
+        const home = await EInvokeJSON("getHome");
+        content = home?.Result?.sections ?? [];
     }
 
     export const snapshot = {
@@ -37,9 +37,7 @@
 
     onMount(async () => {
         SetHomeButton();
-
-        let _ = await EInvokeJSON("getHome");
-        content = _.Result.sections;
+        LoadPage();
     });
 </script>
 
@@ -62,9 +60,7 @@
 </main>
 
 <style>
-
     main {
-
         position: absolute;
 
         top: 0px;

@@ -10,6 +10,7 @@
         from = "",
         playlistId = undefined,
         scroll = undefined,
+        searchFilter = undefined,
     } = $props();
 
     onMount(() => {
@@ -43,19 +44,21 @@
 
 <div class="list-renderer" bind:this={container}>
     {#each content as item, index}
-        <div class="place-holder">
-            {#if scroll === undefined || (index > hiddenBehind && index <= showedItem)}
-                <SongButton
-                    onclick={() => {
-                        SetCurrentPlaylist(content, index, from);
-                    }}
-                    content={item}
-                    elIndex={index}
-                    {renderPhoto}
-                    fatherId={playlistId}
-                />
-            {/if}
-        </div>
+        {#if searchFilter === undefined || item?.title?.toLowerCase().includes(searchFilter?.toLowerCase())}
+            <div class="place-holder">
+                {#if searchFilter != undefined || (scroll === undefined || (index > hiddenBehind && index <= showedItem))}
+                    <SongButton
+                        onclick={() => {
+                            SetCurrentPlaylist(content, index, from);
+                        }}
+                        content={item}
+                        elIndex={index}
+                        {renderPhoto}
+                        fatherId={playlistId}
+                    />
+                {/if}
+            </div>
+        {/if}
     {/each}
 </div>
 

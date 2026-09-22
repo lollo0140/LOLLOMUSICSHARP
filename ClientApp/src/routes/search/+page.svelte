@@ -35,6 +35,7 @@
     import { fade, fly } from "svelte/transition";
     import { goto } from "$app/navigation";
     import { SetCurrentPlaylist } from "../audioPlayer/playerStore";
+    import { EInvokeJSON } from "../../scripts/electronInvoker";
 
     let activeFilter = $state("all");
 
@@ -44,16 +45,8 @@
         loading = true;
         content = undefined;
 
-        content = JSON.parse(
-            // @ts-ignore
-            await window.electron.ipcRenderer.lolloInvoke(
-                "search",
-                searchKey,
-                filter,
-            ),
-        );
+        content = await EInvokeJSON("search", searchKey, filter);
 
-        // @ts-ignore
         content = content.Result;
 
         console.log(content);
@@ -97,7 +90,7 @@
                 >
                 <button
                     onclick={() => {
-                        SearchFilter("traks");
+                        SearchFilter("tracks");
                     }}
                     class="filter-button">TRACKS</button
                 >
@@ -129,59 +122,63 @@
 
             {#if activeFilter === "all"}
                 <div>
-                    <p class="section-title">BEST RESULT</p>
-
-                    <div class="best-result">
-                        <button {onclick} class="best-result-button">
-                            <img
-                                class="best-result-img"
-                                src={content.bestResult.thumbnails[
-                                    content.bestResult.thumbnails.length - 1
-                                ]}
-                                alt=""
-                            />
-                            <div class="best-result-text">
-                                <p class="best-result-title">
-                                    {content?.bestResult?.itemTitle?.toUpperCase()}
-                                </p>
-
-                                <div style="display: flex; ">
-                                    {#if content.bestResult.artists}
-                                        {#each content.bestResult.artists as art}
-                                            <a
-                                                href={`/artists?browseid=${art.artistId}`}
-                                                >{art?.artistName.toUpperCase()}</a
-                                            >
-                                        {/each}
-                                    {/if}
-
-                                    <p class="best-result-subtitle">
-                                        {content.bestResult.type.toUpperCase()}
+                    {#if content.bestResult.type != "video" && content.bestResult.type != "track"}
+                        <p class="section-title">BEST RESULT</p>
+                        <div class="best-result">
+                            <button {onclick} class="best-result-button">
+                                <img
+                                    class="best-result-img"
+                                    src={content?.bestResult?.thumbnails[
+                                        content?.bestResult?.thumbnails
+                                            ?.length - 1
+                                    ]}
+                                    alt=""
+                                />
+                                <div class="best-result-text">
+                                    <p class="best-result-title">
+                                        {content?.bestResult?.itemTitle?.toUpperCase() ??
+                                            content?.bestResult?.title?.toUpperCase()}
                                     </p>
-                                </div>
-                            </div>
-                        </button>
 
-                        <div class="best-result-content">
-                            {#if content.bestResult.content && content.bestResult.content.length > 1}
-                                {#each content.bestResult.content as item}
-                                    {#if item?.type}
-                                        <ResultListElement
-                                            content={item}
-                                            from={`results for: ${searchKey}`}
-                                            onclick={() => {
-                                                SetCurrentPlaylist(
-                                                    [item],
-                                                    0,
-                                                    `top results: ${searchKey}`,
-                                                );
-                                            }}
-                                        />
-                                    {/if}
-                                {/each}
-                            {/if}
+                                    <div style="display: flex; ">
+                                        {#if content?.bestResult?.artists}
+                                            {#each content?.bestResult?.artists as art}
+                                                <a
+                                                    href={`/artists?browseid=${art.artistId}`}
+                                                    >{art?.artistName?.toUpperCase()}
+                                                    •
+                                                </a>
+                                            {/each}
+                                        {/if}
+
+                                        <p class="best-result-subtitle">
+                                            {content.bestResult?.type?.toUpperCase()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <div class="best-result-content">
+                                {#if content?.bestResult?.content && content?.bestResult?.content.length > 1}
+                                    {#each content?.bestResult?.content as item}
+                                        {#if item?.type}
+                                            <ResultListElement
+                                                content={item}
+                                                from={`results for: ${searchKey}`}
+                                                onclick={() => {
+                                                    SetCurrentPlaylist(
+                                                        [item],
+                                                        0,
+                                                        `top results: ${searchKey}`,
+                                                    );
+                                                }}
+                                            />
+                                        {/if}
+                                    {/each}
+                                {/if}
+                            </div>
                         </div>
-                    </div>
+                    {/if}
 
                     <div>
                         {#each content.sections as section}
@@ -192,14 +189,14 @@
                         {/each}
                     </div>
                 </div>
-            {:else if activeFilter === "traks" || activeFilter === "videos"}
-                <p class="section-title">{activeFilter}</p>
+            {:else if activeFilter === "tracks" || activeFilter === "videos"}
+                <p class="section-title">{activeFilter?.toUpperCase()}</p>
                 <SongListRenderer
                     content={content.results}
                     from={`results for: ${searchKey}`}
                 />
             {:else}
-                <p class="section-title">{activeFilter}</p>
+                <p class="section-title">{activeFilter?.toUpperCase()}</p>
 
                 {#each content.results as item}
                     <ResultListElement content={item} />
@@ -211,7 +208,7 @@
     {:else if loading}
         <LoadingAnimation />
     {:else}
-        <p class="suggestion">Search something</p>
+        <p class="suggestion">NOTHING HERE YET, <br /> SEARCH SOMETHING</p>
     {/if}
 </main>
 
@@ -312,7 +309,7 @@
 
         margin: 10px;
 
-        padding: 0px;
+        padding: 10px;
 
         width: calc(100% - 20px);
 

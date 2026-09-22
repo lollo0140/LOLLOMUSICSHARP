@@ -23,12 +23,25 @@
         },
     };
 
-    onMount(async () => {
-        SetPageButtons([]);
+    async function LoadPage() {
+        content = undefined;
         console.log("loading album: ", quary);
         content = await GetAlbumPage(quary);
 
         console.log(content);
+    }
+
+    onMount(async () => {
+        SetPageButtons([
+            {
+                text: "reload",
+                onclick: async () => {
+                    LoadPage();
+                },
+            },
+        ]);
+
+        await LoadPage();
     });
 </script>
 
@@ -94,9 +107,11 @@
             {/if}
         </button>
 
-        <button onclick={ () => {
-            DownloadList(content.items);
-        }}>
+        <button
+            onclick={() => {
+                DownloadList(content.items);
+            }}
+        >
             <img src="./assets/buttons/download.png" alt="" />
         </button>
 

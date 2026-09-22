@@ -68,7 +68,11 @@
                 button.onclick();
             }}
         >
-            {button.text}
+            {#if button.text === "reload"}
+                <img style="width: 17px;" src="/assets/buttons/refresh.png" alt="">
+            {:else}
+                {button.text}
+            {/if}
         </button>
     {/each}
 </div>
@@ -84,19 +88,23 @@
     }
 
     button {
-
         app-region: no-drag;
         border: 1px solid rgba(255, 255, 255, 0.1);
         background: rgba(255, 255, 255, 0.05);
-        height: 35px;
-        width: 35px;
+        height: 37px;
+        width: 37px;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
 
         border-radius: 30px;
 
         padding: 0px;
         margin-right: 0px;
 
-        backdrop-filter: blur(10px) ;
+        backdrop-filter: blur(10px);
         cursor: pointer;
 
         color: rgba(255, 255, 255, 0.7);
@@ -114,7 +122,7 @@
     }
 
     button img {
-        width: 20px;
+        height: 16px;
 
         margin-left: 1px;
         margin-top: 3px;

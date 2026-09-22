@@ -46,7 +46,7 @@
                     ?.map((x) => x.artistName?.toUpperCase())
                     ?.join(", ")}
                 {#if currentSong?.title != currentSong?.album?.titleName?.toUpperCase()}
-                    ● {currentSong?.album?.titleName?.toUpperCase()}
+                    • {currentSong?.album?.titleName?.toUpperCase()}
                 {/if}
             </p>
         </div>

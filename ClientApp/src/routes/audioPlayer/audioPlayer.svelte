@@ -36,6 +36,7 @@
         SetDurationTime,
     } from "../mainscreencomponents/Controlls.svelte";
     import { ESend } from "../../scripts/electronInvoker";
+    import { SetLyricsCurrentTime } from "../../svelte_components/single/LyricsBox.svelte";
 
     let currentSong = $derived($queue[$index]);
 
@@ -55,6 +56,7 @@
 <audio
     ontimeupdate={() => {
         SetCurrentTime(player.currentTime);
+        SetLyricsCurrentTime(player.currentTime);
     }}
     onplay={() => {
         $loading = false;
@@ -66,7 +68,6 @@
         }
 
         ESend("setRpc", JSON.stringify(currentSong));
-
     }}
     onpause={() => {
         $playState = false;

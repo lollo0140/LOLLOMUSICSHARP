@@ -3,7 +3,6 @@
     export function SetImmersiveMode(state) {
         ImmersiveMode = state;
     }
-
 </script>
 
 <script>
@@ -17,14 +16,15 @@
     let currentTrack = $derived($queue[$index]);
 
     let { children } = $props();
-
-
-
 </script>
 
 <div class="content">
     {#if !ImmersiveMode}
-        <div in:fly={{y:100, delay: 200}} out:fly={{y:100}} class="app-content">
+        <div
+            in:fly={{ y: 100, delay: 200 }}
+            out:fly={{ y: 100 }}
+            class="app-content"
+        >
             <div
                 style={currentTrack === undefined ? "right: 0px;" : ""}
                 class="app-navigator lollo-appstyle-DivContainer"
@@ -50,15 +50,12 @@
                 </div>
             {/if}
         </div>
-        {:else}
-        <ImmersiveDisplay/>
+    {:else}
+        <ImmersiveDisplay />
     {/if}
-
-
 </div>
 
 <style>
-
     .content-renderer {
         position: absolute;
 
@@ -99,6 +96,16 @@
         overflow: hidden;
         overflow-y: auto;
         scrollbar-width: none;
+
+        overflow-y: scroll;
+
+        scrollbar-width: none;
+
+        -ms-overflow-style: none;
+    }
+
+    .display::-webkit-scrollbar {
+        display: none;
     }
 
     .app-navigator {
