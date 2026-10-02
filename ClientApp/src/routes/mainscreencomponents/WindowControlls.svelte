@@ -33,11 +33,11 @@
     let { fullscreen } = $props();
 </script>
 
-<main>
+<main class={isPill ? "pill" : ""}>
     <div class="inner">
         <div class="wraper" style="justify-content: flex-start; gap: 0px;">
             <div class="drag-area">
-                <p style="margin-left: 10px;">LOLLOMUSCX</p>
+                <p style="margin-left: 10px;">LOLLOMUSICX</p>
             </div>
 
             {#if !ImmersiveMode}
@@ -63,6 +63,10 @@
                             ImmersiveMode = !ImmersiveMode;
                             SetImmersiveMode(ImmersiveMode);
 
+                            if (isPill) {
+                                WinStateToFullscreen(ImmersiveMode);
+                            }
+
                             if (ImmersiveMode) {
                                 SetFilters(0.6, 70);
                             } else {
@@ -82,61 +86,67 @@
                 <LogISection />
             </div>
 
-            <div class="window-buttons">
-                <button
-                    onclick={() => {
-                        if (isPill) {
-                            ChangeWinState();
-                        } else {
-                            ESend("setWinState", "minimize");
-                        }
-                    }}
-                    ><img
-                        src="./assets/windowbuttons/minimize.png"
-                        alt=""
-                    /></button
-                >
+            {#if !isPill}
+                <div class="window-buttons">
+                    <button
+                        onclick={() => {
+                            if (isPill) {
+                                ChangeWinState();
+                            } else {
+                                ESend("setWinState", "minimize");
+                            }
+                        }}
+                        ><img
+                            src="./assets/windowbuttons/minimize.png"
+                            alt=""
+                        /></button
+                    >
 
-                <button
-                    onclick={() => {
-                        if (isPill) {
-                            WinStateToFullscreen(!fullscreen);
-                            fullscreen = !fullscreen;
-                        } else {
-                            ESend("setWinState", "maximize");
-                        }
-                    }}
-                >
-                    <img
-                        style="width: 19px;"
-                        src={fullscreen
-                            ? "./assets/windowbuttons/close_fullscreen.png"
-                            : "./assets/windowbuttons/open_in_full.png"}
-                        alt=""
-                    />
-                </button>
+                    <button
+                        onclick={() => {
+                            if (isPill) {
+                                WinStateToFullscreen(!fullscreen);
+                                fullscreen = !fullscreen;
+                            } else {
+                                ESend("setWinState", "maximize");
+                            }
+                        }}
+                    >
+                        <img
+                            style="width: 19px;"
+                            src={fullscreen
+                                ? "./assets/windowbuttons/close_fullscreen.png"
+                                : "./assets/windowbuttons/open_in_full.png"}
+                            alt=""
+                        />
+                    </button>
 
-                <button
-                    onclick={() => {
-                        if (isPill) {
-                            ESend("setHideWinValue", true);
-                        } else {
-                            ESend("setWinState", "exit");
-                        }
-                    }}
-                >
-                    <img
-                        style="height: 17px; width: 17px;"
-                        src="./assets/windowbuttons/close.png"
-                        alt=""
-                    />
-                </button>
-            </div>
+                    <button
+                        onclick={() => {
+                            if (isPill) {
+                                ESend("setHideWinValue", true);
+                            } else {
+                                ESend("setWinState", "exit");
+                            }
+                        }}
+                    >
+                        <img
+                            style="height: 17px; width: 17px;"
+                            src="./assets/windowbuttons/close.png"
+                            alt=""
+                        />
+                    </button>
+                </div>
+            {/if}
         </div>
     </div>
 </main>
 
 <style>
+    .pill {
+        position: absolute;
+    }
+
     .wraper {
         display: flex;
         flex-direction: row;

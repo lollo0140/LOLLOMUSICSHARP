@@ -1,4 +1,4 @@
-<script>
+<script module>
     import { onMount } from "svelte";
     import LoadingAnimation from "../svelte_components/reusable/LoadingAnimation.svelte";
     import HomeSection from "./HomeSection.svelte";
@@ -21,7 +21,7 @@
     }
 
     async function LoadPage() {
-        content = undefined
+        content = undefined;
         const home = await EInvokeJSON("getHome");
         content = home?.Result?.sections ?? [];
     }
@@ -34,10 +34,15 @@
             content = saved;
         },
     };
+</script>
 
+<script>
     onMount(async () => {
         SetHomeButton();
-        LoadPage();
+
+        if (content === undefined) {
+            LoadPage();
+        }
     });
 </script>
 

@@ -11,6 +11,11 @@
     import { SetArtistSubscribe } from "../../scripts/savedElements";
     import PageHeader from "../../svelte_components/reusable/PageHeader.svelte";
     import { GetArtistPage } from "../../scripts/browser";
+    import { EInvokeJSON } from "../../scripts/electronInvoker";
+    import {
+        SetCurrentPlaylist,
+        toggleShuffleMode,
+    } from "../audioPlayer/playerStore";
 
     let quary = $derived(page.url.searchParams.get("browseid"));
     let content = $state(undefined);
@@ -114,6 +119,34 @@
                         >
                             {subscribed ? "SUBSCRIBED" : "SUBSCRIBE"}
                         </button>
+
+                        <button
+                            class="sub-button"
+                            onclick={async () => {
+                                const browseid = content.sections[0].browseId;
+                                const p = content.sections[0].params;
+
+                                const songs = await EInvokeJSON(
+                                    "getArtistPopularSongs",
+                                    browseid,
+                                    p,
+                                );
+
+                                const L = songs.length;
+;
+
+                                console.log(L);
+
+
+                                const start = Math.floor(Math.random() * L - 1);
+                                const from = `${content.header.headerTitle} popular tracks`;
+
+                                SetCurrentPlaylist(songs, start, from);
+                                toggleShuffleMode(true);
+                            }}
+                        >
+                            START MIX
+                        </button>
                     </div>
                 </div>
             </PageHeader>
@@ -121,7 +154,7 @@
             <div class="sections">
                 {#each content.sections as sec}
                     <div class="sec">
-                        <p class="sec-title">{sec.title}</p>
+                        <p class="sec-title">{sec.title?.toUpperCase()}</p>
 
                         <div class="sec-content">
                             {#if sec.items[0].type === "track" || sec.items[0].type === "video"}

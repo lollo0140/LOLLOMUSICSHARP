@@ -45,9 +45,9 @@
         <button class="page-button" onclick={() => NavigateTo("/library")}>
             <img src="/assets/navbar/library.png" alt="" />
         </button>
-        <button class="page-button" onclick={() => NavigateTo("/localfiles")}>
+        <!-- <button class="page-button" onclick={() => NavigateTo("/localfiles")}>
             <img src="/assets/navbar/folder.png" alt="" />
-        </button>
+        </button> -->
 
         <div class="divider"></div>
     </div>
@@ -69,7 +69,7 @@
     .library-elements {
         position: absolute;
 
-        top: 250px;
+        top: 200px;
         bottom: 55px;
 
         width: 100%;

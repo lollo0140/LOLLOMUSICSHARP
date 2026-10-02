@@ -160,6 +160,7 @@ class Program
         var options = new BrowserWindowOptions
         {
             Title = "LOLLOMUSICX",
+            Icon = Path.Combine(AppContext.BaseDirectory, "Icon.png"),
             Frame = false,
             AutoHideMenuBar = true,
             Show = true,

@@ -3,11 +3,15 @@
     import SettingSection from "./SettingSection.svelte";
     import OptionLabel from "./optionLabel.svelte";
 
-    let activeStyle = $state("pill"); //float
-
     import { settings } from "../../stores/settingsStore";
+    import { EInvoke, ESend } from "../../scripts/electronInvoker";
 
+    let activeStyle = $state($settings.appearence.winStyle); //float
+
+
+    let requireRestart = $state(false);
     let settingChanged = $state(false);
+
 
     $effect(() => {
         console.log($settings);
@@ -23,6 +27,8 @@
                 <button
                     onclick={() => {
                         activeStyle = "pill";
+                        requireRestart = true;
+                        settingChanged = true;
                     }}
                     class="demo-container"
                     style="opacity: {activeStyle === 'pill' ? '1' : '0.5'};"
@@ -33,6 +39,8 @@
                 <button
                     onclick={() => {
                         activeStyle = "float";
+                        requireRestart = true;
+                        settingChanged = true;
                     }}
                     class="demo-container"
                     style="opacity: {activeStyle === 'float' ? '1' : '0.5'};"
@@ -48,10 +56,7 @@
             <p>{$settings?.localData?.downloadPath ?? "default"}</p>
             <button
                 onclick={async () => {
-                    const newPath =
-                        await window.electron.ipcRenderer.lolloInvoke(
-                            "openDirPicker",
-                        );
+                    const newPath = await EInvoke("openDirPicker");
                     settingChanged = true;
                     $settings.localData.downloadPath = newPath;
                 }}>CHOSE DIRECTORY</button
@@ -63,10 +68,15 @@
         <button
             transition:fly={{ y: 10 }}
             onclick={() => {
-                window.electron.ipcRenderer.lolloInvoke(
-                    "saveSettings",
-                    JSON.stringify($settings),
-                );
+
+                $settings.appearence.winStyle = activeStyle;
+
+                EInvoke("saveSettings", JSON.stringify($settings));
+
+                if (requireRestart) {
+                    ESend("setWinState", "exit");
+                }
+
                 settingChanged = false;
             }}
             class="save-button"
@@ -79,7 +89,6 @@
 </main>
 
 <style>
-
     main {
         position: absolute;
         left: 0px;
@@ -130,8 +139,11 @@
         background: white;
         color: black;
 
-        bottom: 35px;
-        right: 35px;
+        right: 20px;
+
+        margin-top: 20px;
+
+        font-size: 20px;
     }
 
     .save-button:hover {

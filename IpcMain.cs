@@ -300,6 +300,11 @@ class IpcMain
 
         });
 
+        RegisterHandle(win, "getArtistPopularSongs", async (string browseId, string Params) =>
+        {
+            JsonArray res = await Program.yTMusicClient.BrowseEndpoint.FetchArtistPopularTracks(browseId, Params);
+            return res.ToJsonString();
+        });
 
         //add to playlist
         RegisterHandle(win, "addToPlaylistMenu", async () =>

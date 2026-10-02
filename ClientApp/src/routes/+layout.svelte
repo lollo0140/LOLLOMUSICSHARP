@@ -100,6 +100,8 @@
                 WinStateToFullscreen();
             }
         }
+
+
     });
 
     let { children } = $props();
@@ -169,13 +171,22 @@
         {/if}
     {/if}
 {:else}
-    LoadingAnimation
+    <div class="loading-div"></div>
+    <LoadingAnimation />
 {/if}
 
 <ContextMenu />
 
 <style>
     @import "./lollo_appstyles.css";
+
+    .loading-div {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        bottom: 0px;
+        right: 0px;
+    }
 
     :global(body) {
         background: transparent;

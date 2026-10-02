@@ -1,4 +1,6 @@
 <script>
+    import { GetImmageUrl } from "../../scripts/immages";
+
     let { openCommand } = $props();
 
     import { SetPlayState } from "../audioPlayer/audioPlayer.svelte";
@@ -24,7 +26,7 @@
         <div class="bg-wrapper">
             <img
                 class="bg-img"
-                src={current?.thumbnails?.[0] ?? undefined}
+                src={GetImmageUrl(current.thumbnails[1], 300)}
                 alt=""
             />
         </div>
@@ -36,17 +38,9 @@
             <div class="current-info">
                 <p class="track-title">{current?.title?.toUpperCase()}</p>
 
-                <div style="display: flex; align-items: center;">
-                    <p class="track-artist">
-                        {current?.artists?.[0]?.artistName ?? ""}
-                    </p>
-
-                    {#if current?.album?.titleName}
-                        <p class="track-album">
-                            {"• " + current?.album?.titleName}
-                        </p>
-                    {/if}
-                </div>
+                <p class="track-artist">
+                    {current?.artists?.[0]?.artistName ?? ""}
+                </p>
             </div>
 
             <div class="mainButtons">
@@ -149,7 +143,7 @@
         height: 100%;
         z-index: 0;
         overflow: hidden;
-        pointer-events: none; /* Evita che intercepti i click o il drag */
+        pointer-events: none;
         border-radius: 20px;
     }
 
@@ -157,8 +151,8 @@
         width: 100%;
         height: 100%;
         object-fit: cover;
-        opacity: 0.5;
-        filter: blur(18px);
+        opacity: 0.6;
+        filter: blur(10px);
         transform: scale(1.2);
     }
 
@@ -196,19 +190,8 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 20%;
     }
 
-    .track-album {
-        margin: 0;
-        margin-left: 5px;
-        font-weight: 700;
-        opacity: 0.5;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 60%;
-    }
 
     /* --- PULSANTI E CONTROLLI (NO-DRAG) --- */
     .mainButtons {

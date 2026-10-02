@@ -4,6 +4,7 @@
     import { NavigateTo } from "../../scripts/navigationScript.js";
     import { GetDefPng } from "../../scripts/defPngManager.js";
     import { openContextMenu } from "../../routes/ContextMenu.svelte";
+    import { SetCurrentPlaylist } from "../../routes/audioPlayer/playerStore.js";
 
     let { content } = $props();
 
@@ -31,6 +32,8 @@
             NavigateTo("/artists", [`browseid=${content.browseId}`]);
         } else if (content.type === "album") {
             NavigateTo("/album", [`browseid=${content.browseId}`]);
+        } else if (content.type === "video" || content.type === "track") {
+            SetCurrentPlaylist([content], 0, "Home Page")
         }
     }
 </script>

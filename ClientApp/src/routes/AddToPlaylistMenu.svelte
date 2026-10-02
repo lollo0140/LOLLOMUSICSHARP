@@ -1,5 +1,6 @@
 <script module>
     import { fade } from "svelte/transition";
+    import { EInvoke } from "../scripts/electronInvoker";
 
     let content = $state();
 
@@ -27,11 +28,7 @@
             (id) => id !== undefined && id !== null,
         );
 
-        await window.electron.ipcRenderer.lolloInvoke(
-            "addToplaylist",
-            newArray,
-            playlistId,
-        );
+        EInvoke("addToplaylist", newArray, playlistId);
 
         ids = [];
         menuVisible = false;
@@ -103,9 +100,6 @@
     .all-playlist {
         display: flex;
         flex-direction: column;
-
-
-
     }
 
     .pl-list-vertical {
@@ -157,7 +151,6 @@
         align-items: start;
         justify-content: center;
 
-
         font-weight: 800;
 
         margin-left: 10px;
@@ -170,7 +163,6 @@
     .title {
         font-size: 20px;
     }
-
 
     /* RECENT ITEMS --------------- */
 
